@@ -1,17 +1,44 @@
 package LexicalSeparator;
 
+import java.io.*;
 import java.util.*;
 
 public class LexicalSeparator {
 
     public static void main(String[] args) {
-        System.out.print("Input: ");
-        Scanner s = new Scanner(System.in);
-        String input = s.nextLine();
-
-        List<Token> tokens = analyze(input);
-        for (Token token : tokens) {
-            System.out.println(token);
+        File file = new File("input.txt");
+        
+        String fileName = file.getName();
+        List<String> input = new ArrayList<String>();
+        
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(fileName));
+            int ctr = 0;
+            String line;
+            
+            while ((line = br.readLine()) != null) {
+                input.add(line);
+                // System.out.println("line " + ctr + ": " + line);
+                ctr++;
+            }
+            
+            br.close();
+            
+            List<Token> output = new ArrayList<>();
+            
+            for (String str : input) {
+                List<Token> tokens = analyze(str);
+                
+                for (Token token : tokens) {
+                    System.out.println(token);
+                    output.add(token);
+                }
+            }
+            
+            // Display Output Table
+            new OutputTable(output);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -52,28 +79,10 @@ public class LexicalSeparator {
                 } else {
                     tokens.add(new Token(TokenType.SYMBOL, sb.toString()));
                 }
-            } else if (c == ',') { //---------------ONGOING hehe, di pa ayos
-                StringBuilder sb = new StringBuilder();
-                sb.append(c);
+            } else if (c == ',') {
+                 // parse operator
+                tokens.add(new Token(TokenType.COMMA, Character.toString(c)));
                 i++;
-                if (Character.isDigit(input.charAt(i))) {
-                    while (i < input.length() && Character.isDigit(input.charAt(i))) {
-                        sb.append(input.charAt(i));
-                        i++;
-                    }
-                    tokens.add(new Token(TokenType.ARRVAL, sb.toString()));
-                }
-
-                if (Character.isWhitespace(input.charAt(i))) {
-                    i++;
-                    while (i < input.length() && Character.isDigit(input.charAt(i))) {
-                        sb.append(input.charAt(i));
-                        i++;
-                    }
-                    tokens.add(new Token(TokenType.ARRVAL, sb.toString()));
-                } else {
-                    tokens.add(new Token(TokenType.SYMBOL, sb.toString()));
-                }
             } else if (Character.isLetter(c)) {
                 // parse identifier or keyword
                 StringBuilder sb = new StringBuilder();
@@ -132,13 +141,13 @@ public class LexicalSeparator {
                         tokens.add(new Token(TokenType.KEYWORD, value));
                         i -= ctr;
                     } else {    // if only "vibe" is provided
-                        tokens.add(new Token(TokenType.VARIABLENAME, value));
+                        tokens.add(new Token(TokenType.IDENTIFIER, value));
                         i -= ctr;
                     }
                 } else if (value.equals("tbh") || value.equals("g") || value.equals("forda")) {
                     tokens.add(new Token(TokenType.KEYWORD, value));
                 } else {
-                    tokens.add(new Token(TokenType.VARIABLENAME, value));
+                    tokens.add(new Token(TokenType.IDENTIFIER, value));
                 }
             } else if (c == ';') {
                 // parse operator
