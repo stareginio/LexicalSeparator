@@ -1,6 +1,6 @@
-
 package LexicalSeparator;
 
+import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -23,7 +23,16 @@ public class OutputTable {
         jt.setBounds(30,40,200,300);
         JScrollPane sp = new JScrollPane(jt);
         f.add(sp);
-        f.setSize(300,400);    
+        f.setSize(450,600);    
         f.setVisible(true);
+        
+        f.addWindowListener(new CloseButtonHandler());
+    }
+    
+    // To end the program when the window is closed
+    private class CloseButtonHandler extends WindowAdapter {
+        public void windowClosing(WindowEvent we) {
+            System.exit(0);
+        }
     }
 }

@@ -1,3 +1,4 @@
+
 package LexicalSeparator;
 
 public enum TokenType {

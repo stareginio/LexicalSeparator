@@ -1,4 +1,3 @@
-
 package LexicalSeparator;
 
 public class Token {

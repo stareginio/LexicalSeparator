@@ -1,0 +1,11 @@
+digits x = 0;
+
+vibe check (x W samedt 20) {
+  tbh (x samedt 0) {
+    x = x lahamz 1;
+  } nvm tbh (x samedt 5) {
+    x = x lahamz 10;
+  } nvm {
+    x = x lahamz 2;
+  }
+}
