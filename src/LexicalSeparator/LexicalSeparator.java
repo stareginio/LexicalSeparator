@@ -17,9 +17,9 @@ public class LexicalSeparator {
 
     public static List<Token> analyze(String input) {
 
-        List<Character> symbols = Arrays.asList('~', '!', '@', '#', '$', '%', '^',
-                '&', '*', '-', '_', '+', '[', ']', '|', '\\', '/', ':', ';',
-                '<', '>', ',', '.', '?');
+        List<Character> symbols = Arrays.asList('~', '!', '@', '#', '$', '%', 
+                '^', '&', '*', '-', '_', '+', '[', ']', '|', '\\', '/', ':', 
+                ';', '<', '>', ',', '.', '?');
 
         List<Token> tokens = new ArrayList<>();
         int i = 0;
@@ -84,11 +84,12 @@ public class LexicalSeparator {
                     i++;
                 }
                 String value = sb.toString();
-                if (value.equals("digits") || value.equals("lutang") || value.equals("yarn") || value.equals("awit")) {
+                if (value.equals("digits") || value.equals("lutang")
+                        || value.equals("yarn") || value.equals("awit")) {
                     tokens.add(new Token(TokenType.DATATYPE, value));
                 } else if (value.equals("lahamz") || value.equals("ghosted") || value.equals("cheater")
                         || value.equals("chariz") || value.equals("dasurv")) {
-                    tokens.add(new Token(TokenType.ARITHOPERATOR, value));
+                    tokens.add(new Token(TokenType.ARITH_OPERATOR, value));
                 } else if ((value.equals("W") || value.equals("L"))) {
                     // parse the next word
                     StringBuilder sb2 = new StringBuilder();
