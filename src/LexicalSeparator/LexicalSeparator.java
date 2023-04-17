@@ -31,6 +31,7 @@ public class LexicalSeparator {
                 
                 for (String str : input) {
                     tokens = analyze(str);
+                    boolean isUnary = false;
 
                     for (Token token : tokens) { 
                         System.out.println(token);
@@ -43,7 +44,7 @@ public class LexicalSeparator {
                                 throw new LexicalException("Unknown token: " + token.getValue());
                             }
                             
-                            // check if <NUMBERS><IDENTIFIER>, <SYMBOL><IDENTIFIER>, OR <IDENTIFIER><SYMBOL>
+                            
                             TokenType tokenTypePrev = output.get(output.size() - 2).getType();
                             TokenType tokenTypeNew = output.get(output.size() - 1).getType();
 
@@ -52,11 +53,20 @@ public class LexicalSeparator {
 //                            System.out.println("tokenTypeNew: " + tokenTypeNew);
 //                            System.out.println("-----------");
 
+                            // check if <NUMBERS><IDENTIFIER>, <SYMBOL><IDENTIFIER>, OR <IDENTIFIER><SYMBOL>
                             if ((tokenTypePrev == TokenType.NUMBERS && tokenTypeNew == TokenType.IDENTIFIER)
                                     || (tokenTypePrev == TokenType.SYMBOL && tokenTypeNew == TokenType.IDENTIFIER)
                                     || (tokenTypePrev == TokenType.IDENTIFIER && tokenTypeNew == TokenType.SYMBOL)) {
                                 throw new LexicalException("<" + tokenTypePrev + ">"
                                         + "<" + tokenTypeNew + "> detected");
+                            } else if (tokenTypePrev == TokenType.UNARY_OPERATOR
+                                    && tokenTypeNew == TokenType.IDENTIFIER) {  // check if unary operator before identifier
+                                isUnary = true;
+                            } else if (isUnary && tokenTypePrev == TokenType.IDENTIFIER
+                                    && tokenTypeNew == TokenType.UNARY_OPERATOR) {  // check for double unary operator
+                                throw new LexicalException("<UNARY_OPERATOR><IDENTIFIER><UNARY_OPERATOR> detected");
+                            } else {
+                                isUnary = false;
                             }
                         }
                     }
@@ -131,7 +141,7 @@ public class LexicalSeparator {
                         sb.append(input.charAt(i));
                         i++;
 
-                        if (i == input.length() || Character.isLetter(input.charAt(i+1))) {   // check if it has no other characters
+                        if (i <= input.length()) { // check if it has no other characters
                             tokens.add(new Token(TokenType.UNARY_OPERATOR, sb.toString()));
                         } else {
                             tokens.add(new Token(TokenType.UNKNOWN, sb.toString() + "..."));
@@ -158,7 +168,7 @@ public class LexicalSeparator {
                         sb.append(input.charAt(i));
                         i++;
 
-                        if (i == input.length() || Character.isLetter(input.charAt(i+1))) {   // check if it has no other characters
+                        if (i <= input.length()) { // check if it has no other characters
                             tokens.add(new Token(TokenType.UNARY_OPERATOR, sb.toString()));
                         } else {
                             tokens.add(new Token(TokenType.UNKNOWN, sb.toString() + "..."));
