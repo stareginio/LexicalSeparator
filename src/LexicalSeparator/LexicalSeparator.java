@@ -74,13 +74,17 @@ public class LexicalSeparator {
                 
                 // proceed to syntax analyzer
                 try {
+//                    System.out.println("output: ");
+//                    System.out.println(output);
+                    
                     SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer();
-                    syntaxAnalyzer.analyze(tokens);
+                    syntaxAnalyzer.analyze(output);
 
                     System.out.println("Valid statement");
                 } catch (Exception e) {
                     System.out.println("Syntax error: " + e.getMessage());
-                    System.out.println("Occurred at: " + e.getStackTrace()[0]);
+//                    System.out.println("Occurred at: " + e.getStackTrace()[0]);
+                    e.printStackTrace();
                     System.out.println("Invalid statement");
 
                     // popup message for user
