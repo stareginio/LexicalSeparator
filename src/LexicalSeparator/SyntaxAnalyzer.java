@@ -29,17 +29,141 @@ public class SyntaxAnalyzer {
             parseAssignment();
         } else if (currentTokenType == TokenType.KEYWORD) {
             parseKeyword();
+        } else if (currentTokenType == TokenType.NUMBERS) {
+            parseArithOp();
+        } else if (currentTokenType == TokenType.STRING_LITERAL) {
+            parseAssignOp();
         } else {
             throw new Exception("Unexpected token: " + getCurrentToken());
         }
     }
 
     private void parseVariableDeclaration() throws Exception {
-        match(TokenType.DATATYPE);
-        parseVariableName();
-        if (getCurrentTokenType() == TokenType.SYMBOL && getCurrentToken().equals("=")) {
-            match(TokenType.SYMBOL);
-            parseExpression();
+        if (getCurrentTokenInput().equals("yarn")) {
+            match(TokenType.DATATYPE);
+            if (getCurrentTokenType() == TokenType.OPENBRACKET) {
+                match(TokenType.OPENBRACKET);
+                match(TokenType.CLOSEBRACKET);
+                parseVariableName();
+                if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
+                    match(TokenType.ASSIGNMENT_OPERATOR);
+                    match(TokenType.OPENBRACE);
+                    match(TokenType.STRING_LITERAL);
+                    if (getCurrentTokenType() == TokenType.COMMA) {
+                        do {
+                            match(TokenType.COMMA);
+                            match(TokenType.STRING_LITERAL);
+                        } while (getCurrentTokenType() == TokenType.COMMA);
+                    }
+                    match(TokenType.CLOSEBRACE);
+                }
+            } else {
+                parseVariableName();
+                if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
+                    match(TokenType.ASSIGNMENT_OPERATOR);
+                    match(TokenType.STRING_LITERAL);
+                    while (getCurrentTokenInput().equals("lahamz")) {
+                        match(TokenType.ARITH_OPERATOR);
+                        match(TokenType.STRING_LITERAL);
+                        System.out.println(getCurrentTokenType());
+                    }
+                }
+            }
+
+        } else if (getCurrentTokenInput().equals("digits")) {
+            match(TokenType.DATATYPE);
+            if (getCurrentTokenType() == TokenType.OPENBRACKET) {
+                match(TokenType.OPENBRACKET);
+                match(TokenType.CLOSEBRACKET);
+                parseVariableName();
+                if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
+                    match(TokenType.ASSIGNMENT_OPERATOR);
+                    match(TokenType.OPENBRACE);
+                    match(TokenType.NUMBERS);
+                    if (getCurrentTokenType() == TokenType.COMMA) {
+                        do {
+                            match(TokenType.COMMA);
+                            match(TokenType.NUMBERS);
+                        } while (getCurrentTokenType() == TokenType.COMMA);
+                    }
+                    match(TokenType.CLOSEBRACE);
+                }
+            } else {
+                parseVariableName();
+                if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
+                    match(TokenType.ASSIGNMENT_OPERATOR);
+                    match(TokenType.NUMBERS);
+                    if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+                        do {
+                            match(TokenType.ARITH_OPERATOR);
+                            match(TokenType.NUMBERS);
+                        } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+                    }
+                }
+            }
+        } else if (getCurrentTokenInput().equals("lutang")) {
+            match(TokenType.DATATYPE);
+            if (getCurrentTokenType() == TokenType.OPENBRACKET) {
+                match(TokenType.OPENBRACKET);
+                match(TokenType.CLOSEBRACKET);
+                parseVariableName();
+                if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
+                    match(TokenType.ASSIGNMENT_OPERATOR);
+                    match(TokenType.OPENBRACE);
+                    match(TokenType.NUMBERS);
+                    match(TokenType.POINT);
+                    match(TokenType.NUMBERS);
+                    if (getCurrentTokenType() == TokenType.COMMA) {
+                        do {
+                            match(TokenType.COMMA);
+                            match(TokenType.NUMBERS);
+                            match(TokenType.POINT);
+                            match(TokenType.NUMBERS);
+                        } while (getCurrentTokenType() == TokenType.COMMA);
+                    }
+                    match(TokenType.CLOSEBRACE);
+                }
+            } else {
+                parseVariableName();
+                if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
+                    match(TokenType.ASSIGNMENT_OPERATOR);
+                    match(TokenType.NUMBERS);
+                    match(TokenType.POINT);
+                    match(TokenType.NUMBERS);
+                    if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+                        do {
+                            match(TokenType.ARITH_OPERATOR);
+                            match(TokenType.NUMBERS);
+                            match(TokenType.POINT);
+                            match(TokenType.NUMBERS);
+                        } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+                    }
+                }
+            }
+        }
+    }
+
+    private void parseArithOp() throws Exception {
+        TokenType currentTokenType = getCurrentTokenType();
+
+        if (currentTokenType == TokenType.NUMBERS) {
+            match(TokenType.NUMBERS);
+            match(TokenType.ARITH_OPERATOR);
+            match(TokenType.NUMBERS);
+        } else {
+            throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
+        }
+    }
+
+    private void parseAssignOp() throws Exception {
+        TokenType currentTokenType = getCurrentTokenType();
+
+        match(TokenType.STRING_LITERAL);
+        if (currentTokenType == TokenType.ARITH_OPERATOR && getCurrentTokenInput().equals("lahamz")) {
+            match(TokenType.ARITH_OPERATOR);
+            match(TokenType.STRING_LITERAL);
+        } else {
+            throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
         }
     }
 
@@ -105,5 +229,9 @@ public class SyntaxAnalyzer {
 
     private Token getCurrentToken() {
         return tokens.get(currentTokenIndex);
+    }
+
+    private String getCurrentTokenInput() {
+        return tokens.get(currentTokenIndex).getValue();
     }
 }
