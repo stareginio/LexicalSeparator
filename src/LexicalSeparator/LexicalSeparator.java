@@ -22,14 +22,15 @@ public class LexicalSeparator {
                 // System.out.println("line " + ctr + ": " + line);
                 ctr++;
             }
-
             br.close();
 
             List<Token> output = new ArrayList<>();
 
             try {
+                List<Token> tokens = null;
+                
                 for (String str : input) {
-                    List<Token> tokens = analyze(str);
+                    tokens = analyze(str);
 
                     for (Token token : tokens) {
                         System.out.println(token);
@@ -53,6 +54,21 @@ public class LexicalSeparator {
                             }
                         }
                     }
+                }
+                
+                // proceed to syntax analyzer
+                try {
+                    SyntaxAnalyzer syntaxAnalyzer = new SyntaxAnalyzer();
+                    syntaxAnalyzer.analyze(tokens);
+
+                    System.out.println("Valid statement");
+                } catch (Exception e) {
+                    System.out.println("Syntax error: " + e.getMessage());
+                    System.out.println("Invalid statement");
+
+                    // popup message for user
+//                    JOptionPane.showMessageDialog(null, e,
+//                            "Syntax Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (LexicalException e) {
                 JOptionPane.showMessageDialog(null, e,
