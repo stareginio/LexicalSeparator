@@ -131,7 +131,7 @@ public class LexicalSeparator {
                         sb.append(input.charAt(i));
                         i++;
 
-                        if (i >= input.length()) {   // check if it has no other characters
+                        if (i == input.length() || Character.isLetter(input.charAt(i+1))) {   // check if it has no other characters
                             tokens.add(new Token(TokenType.UNARY_OPERATOR, sb.toString()));
                         } else {
                             tokens.add(new Token(TokenType.UNKNOWN, sb.toString() + "..."));
@@ -158,7 +158,7 @@ public class LexicalSeparator {
                         sb.append(input.charAt(i));
                         i++;
 
-                        if (i >= input.length()) {   // check if it has no other characters
+                        if (i == input.length() || Character.isLetter(input.charAt(i+1))) {   // check if it has no other characters
                             tokens.add(new Token(TokenType.UNARY_OPERATOR, sb.toString()));
                         } else {
                             tokens.add(new Token(TokenType.UNKNOWN, sb.toString() + "..."));
