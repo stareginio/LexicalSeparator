@@ -14,25 +14,31 @@ public class SyntaxAnalyzer {
     }
 
     private void parseProgram() throws Exception {
-        while (currentTokenIndex < tokens.size()) {
+        while (currentTokenIndex < tokens.size()) {           
             parseStatement();
-            match(TokenType.SEMICOLON);
         }
     }
 
     private void parseStatement() throws Exception {
         TokenType currentTokenType = getCurrentTokenType();
+        
+        System.out.println("currentTokenType: " + currentTokenType);
 
         if (currentTokenType == TokenType.DATATYPE) {
             parseVariableDeclaration();
+            match(TokenType.SEMICOLON);
         } else if (currentTokenType == TokenType.IDENTIFIER) {
             parseAssignment();
+            match(TokenType.SEMICOLON);
         } else if (currentTokenType == TokenType.KEYWORD) {
             parseKeyword();
         } else if (currentTokenType == TokenType.NUMBERS) {
+            match(TokenType.NUMBERS);
             parseArithOp();
+            match(TokenType.SEMICOLON);
         } else if (currentTokenType == TokenType.STRING_LITERAL) {
             parseAssignOp();
+            match(TokenType.SEMICOLON);
         } else {
             throw new Exception("Unexpected token: " + getCurrentToken());
         }
@@ -144,22 +150,32 @@ public class SyntaxAnalyzer {
     }
 
     private void parseArithOp() throws Exception {
-        TokenType currentTokenType = getCurrentTokenType();
-
-        if (currentTokenType == TokenType.NUMBERS) {
+        if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+            do {
+                match(TokenType.ARITH_OPERATOR);
+                match(TokenType.NUMBERS);
+            } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+        } else if (getCurrentTokenType() == TokenType.POINT) {
+            match(TokenType.POINT);
             match(TokenType.NUMBERS);
-            match(TokenType.ARITH_OPERATOR);
-            match(TokenType.NUMBERS);
+            if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+                do {
+                    match(TokenType.ARITH_OPERATOR);
+                    match(TokenType.NUMBERS);
+                    match(TokenType.POINT);
+                    match(TokenType.NUMBERS);
+                } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+            }
         } else {
             throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
         }
     }
 
     private void parseAssignOp() throws Exception {
-        TokenType currentTokenType = getCurrentTokenType();
-
         match(TokenType.STRING_LITERAL);
-        if (currentTokenType == TokenType.ARITH_OPERATOR && getCurrentTokenInput().equals("lahamz")) {
+        if (getCurrentTokenInput().equals("lahamz") || getCurrentTokenInput().equals("ghosted")
+                || getCurrentTokenInput().equals("cheater") || getCurrentTokenInput().equals("chariz")
+                || getCurrentTokenInput().equals("dasurv")) {
             match(TokenType.ARITH_OPERATOR);
             match(TokenType.STRING_LITERAL);
         } else {
@@ -169,41 +185,155 @@ public class SyntaxAnalyzer {
 
     private void parseAssignment() throws Exception {
         parseVariableName();
-        match(TokenType.SYMBOL);
-        parseExpression();
+        if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
+            match(TokenType.ASSIGNMENT_OPERATOR);
+            parseExpression();
+        }
+        
+        if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+            do {
+                match(TokenType.ARITH_OPERATOR);
+                if (getCurrentTokenType() == TokenType.IDENTIFIER) {    // check if variable
+                    parseVariableName();
+                } else if (getCurrentTokenType() == TokenType.NUMBERS) {  // check if value
+                    match(TokenType.NUMBERS);
+                }
+            } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+        }
     }
 
     private void parseVariableName() throws Exception {
         match(TokenType.IDENTIFIER);
     }
 
-    private void parseKeyword() throws Exception {
-        Token currentToken = getCurrentToken();
+    private void parseKeyword() throws Exception {       
+        if (getCurrentTokenInput().equals("tbh")) {    //if / if-else chain / if-else statement
+            match(TokenType.KEYWORD);
+            
+            match(TokenType.OPENPARENTHESIS);
+            parseConditionNumbers();
+            match(TokenType.CLOSEPARENTHESIS);
+            
+            match(TokenType.OPENBRACE);
+            parseStatement();
+            match(TokenType.CLOSEBRACE);
+            
+            System.out.println("getCurrentTokenInput() after tbh: " + getCurrentTokenInput());
+            System.out.println("getCurrentTokenType() after tbh: " + getCurrentTokenType());
+            System.out.println("ccurrentTokenIndex after tbh: " + (currentTokenIndex + 1));
+            
+            // check for "else if" statement/s
+            while (getCurrentTokenInput().equals("nvm tbh")) {
+                match(TokenType.KEYWORD);
+                    
+                match(TokenType.OPENPARENTHESIS);
+                parseConditionNumbers();
+                match(TokenType.CLOSEPARENTHESIS);
 
-        if (currentToken.getValue().equals("tbh")) {
+                match(TokenType.OPENBRACE);
+                parseStatement();
+                match(TokenType.CLOSEBRACE);
+            }
+            
+            // check for "else" statement
+            if (getCurrentTokenInput().equals("nvm")) {
+                match(TokenType.KEYWORD);
+                match(TokenType.OPENBRACE);
+                parseStatement();
+                match(TokenType.CLOSEBRACE);
+            }
+        } else if (getCurrentTokenInput().equals("nvm tbh") || getCurrentTokenInput().equals("nvm")) {
+            throw new Exception("Keyword " + getCurrentTokenType() + " found without a previous 'tbh' statement");
+        } else if (getCurrentTokenInput().equals("g")) {   // do-while loop
+            match(TokenType.KEYWORD);
+            match(TokenType.OPENBRACE);
+            
+            // check if iteration
+            int nextTokenIndex = currentTokenIndex + 1;
+            if ((getCurrentTokenType() == TokenType.UNARY_OPERATOR
+                    && (nextTokenIndex < tokens.size()) && tokens.get(nextTokenIndex).getType() == TokenType.IDENTIFIER)
+                    || (getCurrentTokenType() == TokenType.IDENTIFIER
+                    && (nextTokenIndex < tokens.size()) && tokens.get(nextTokenIndex).getType() == TokenType.UNARY_OPERATOR)) {
+                parseIteration();
+            } else {
+                parseStatement();
+            }
+            
+            match(TokenType.CLOSEBRACE);
+            
+            // throw error if vibe check keyword is not detected
+            if (getCurrentTokenType() != TokenType.KEYWORD
+                    && !getCurrentTokenInput().equals("vibe check")) {
+                 throw new Exception("Expected keyword vibe check, but found " + getCurrentTokenType());
+            } else {
+                match(TokenType.KEYWORD);
+            
+                match(TokenType.OPENPARENTHESIS);
+                parseConditionNumbers();
+                match(TokenType.CLOSEPARENTHESIS);
+                
+                match(TokenType.SEMICOLON);
+            }
+        } else if (getCurrentTokenInput().equals("vibe check")) {  // while loop
+            match(TokenType.KEYWORD);
+            
+            match(TokenType.OPENPARENTHESIS);
+            parseConditionNumbers();
+            match(TokenType.CLOSEPARENTHESIS);
+
+            match(TokenType.OPENBRACE);
+
+            // check if digits initialization
+            if (getCurrentTokenInput().equals("digits")) {
+                int nextTokenIndex = currentTokenIndex + 1;
+                if ((getCurrentTokenType() == TokenType.UNARY_OPERATOR
+                        && (nextTokenIndex < tokens.size()) && tokens.get(nextTokenIndex).getType() == TokenType.IDENTIFIER)
+                        || (getCurrentTokenType() == TokenType.IDENTIFIER
+                        && (nextTokenIndex < tokens.size()) && tokens.get(nextTokenIndex).getType() == TokenType.UNARY_OPERATOR)) {
+                    parseIteration();
+                } else {
+                    parseStatement();
+                }
+            } else {
+                parseStatement();
+            }
+
+            match(TokenType.CLOSEBRACE);
+        } else if (getCurrentTokenInput().equals("forda")) {   // for loop           
             match(TokenType.KEYWORD);
             match(TokenType.OPENPARENTHESIS);
-            parseExpression();
+            
+            // check if digits initialization
+            if (getCurrentTokenInput().equals("digits")) {
+                match(TokenType.DATATYPE);
+                match(TokenType.IDENTIFIER);
+                match(TokenType.ASSIGNMENT_OPERATOR);
+                if (getCurrentTokenType() == TokenType.IDENTIFIER
+                        || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+                    currentTokenIndex++;
+                }
+            } else {
+                throw new Exception("Expected digits expression, but found " + getCurrentTokenInput());
+            }
+            
+            match(TokenType.SEMICOLON);
+            parseConditionNumbers();    // condition involving numbers
+            
+            match(TokenType.SEMICOLON);
+            parseIteration();   // iteration
+            
             match(TokenType.CLOSEPARENTHESIS);
-        } else if (currentToken.getValue().equals("g")) {
-            match(TokenType.KEYWORD);
-            match(TokenType.OPENPARENTHESIS);
-            parseExpression();
-            match(TokenType.CLOSEPARENTHESIS);
-        } else if (currentToken.getValue().equals("forda")) {
-            match(TokenType.KEYWORD);
-            match(TokenType.OPENPARENTHESIS);
-            parseExpression();
-            match(TokenType.COMMA);
-            parseExpression();
-            match(TokenType.COMMA);
-            parseExpression();
-            match(TokenType.CLOSEPARENTHESIS);
+            match(TokenType.OPENBRACE);
+            
+            // nts: debug
+            parseStatement();  // statement
+            
+            match(TokenType.CLOSEBRACE);
         } else {
             throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
         }
     }
-
+    
     private void parseExpression() throws Exception {
         TokenType currentTokenType = getCurrentTokenType();
 
@@ -216,9 +346,30 @@ public class SyntaxAnalyzer {
         }
     }
 
+    private void parseIteration() throws Exception {
+        // check if starting with unary operator
+        if (getCurrentTokenType() == TokenType.UNARY_OPERATOR) {
+            match(TokenType.UNARY_OPERATOR);
+            match(TokenType.IDENTIFIER);
+        } else {
+            match(TokenType.IDENTIFIER);
+            match(TokenType.UNARY_OPERATOR);
+        }
+    }
+    
+    private void parseConditionNumbers() throws Exception {
+        match(TokenType.IDENTIFIER);
+        match(TokenType.REL_OPERATOR);
+        if (getCurrentTokenType() == TokenType.IDENTIFIER
+                || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+            currentTokenIndex++;
+        }
+    }
+    
     private void match(TokenType expectedTokenType) throws Exception {
         if (getCurrentTokenType() != expectedTokenType) {
-            throw new Exception("Expected token type " + expectedTokenType + ", but found " + getCurrentTokenType());
+            throw new Exception("Expected token type " + expectedTokenType + ", but found " + getCurrentTokenType()
+            + " with value " + getCurrentTokenInput() + " at token " + (currentTokenIndex + 1));
         }
         currentTokenIndex++;
     }
