@@ -2,39 +2,63 @@ package LexicalSeparator;
 
 import java.io.*;
 import java.util.*;
+import javax.swing.*;
 
 public class LexicalSeparator {
 
     public static void main(String[] args) {
         File file = new File("input.txt");
-        
+
         String fileName = file.getName();
         List<String> input = new ArrayList<String>();
-        
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(fileName));
             int ctr = 0;
             String line;
-            
+
             while ((line = br.readLine()) != null) {
                 input.add(line);
                 // System.out.println("line " + ctr + ": " + line);
                 ctr++;
             }
-            
+
             br.close();
-            
+
             List<Token> output = new ArrayList<>();
-            
-            for (String str : input) {
-                List<Token> tokens = analyze(str);
-                
-                for (Token token : tokens) {
-                    System.out.println(token);
-                    output.add(token);
+
+            try {
+                for (String str : input) {
+                    List<Token> tokens = analyze(str);
+
+                    for (Token token : tokens) {
+                        System.out.println(token);
+                        output.add(token);
+                        
+                        // throw error if <NUMBERS><IDENTIFIER>, <SYMBOL><IDENTIFIER>, OR <IDENTIFIER><SYMBOL> 
+                        if (output.size() > 1) {
+                            TokenType tokenTypePrev = output.get(output.size() - 2).getType();
+                            TokenType tokenTypeNew = output.get(output.size() - 1).getType();
+
+//                            System.out.println("-----------");
+//                            System.out.println("tokenTypePrev: " + tokenTypePrev);
+//                            System.out.println("tokenTypeNew: " + tokenTypeNew);
+//                            System.out.println("-----------");
+
+                            if ((tokenTypePrev == TokenType.NUMBERS && tokenTypeNew == TokenType.IDENTIFIER)
+                                    || (tokenTypePrev == TokenType.SYMBOL && tokenTypeNew == TokenType.IDENTIFIER)
+                                    || (tokenTypePrev == TokenType.IDENTIFIER && tokenTypeNew == TokenType.SYMBOL)) {
+                                throw new LexicalException("<" + tokenTypePrev + ">"
+                                        + "<" + tokenTypeNew + "> detected");
+                            }
+                        }
+                    }
                 }
+            } catch (LexicalException e) {
+                JOptionPane.showMessageDialog(null, e,
+                        "Lexical Error", JOptionPane.ERROR_MESSAGE);
             }
-            
+
             // Display Output Table
             new OutputTable(output);
         } catch (IOException e) {
@@ -44,14 +68,15 @@ public class LexicalSeparator {
 
     public static List<Token> analyze(String input) {
 
-        List<Character> symbols = Arrays.asList('~', '!', '@', '#', '$', '%', 
-                '^', '&', '*', '-', '_', '+', '[', ']', '|', '\\', '/', ':', 
+        List<Character> symbols = Arrays.asList('~', '!', '@', '#', '$', '%',
+                '^', '&', '*', '-', '_', '+', '[', ']', '|', '\\', '/', ':',
                 ';', '<', '>', ',', '.', '?');
 
         List<Token> tokens = new ArrayList<>();
         int i = 0;
         while (i < input.length()) {
             char c = input.charAt(i);
+
             if (Character.isWhitespace(c)) {
                 // skip whitespace
                 i++;
@@ -80,7 +105,7 @@ public class LexicalSeparator {
                     tokens.add(new Token(TokenType.SYMBOL, sb.toString()));
                 }
             } else if (c == ',') {
-                 // parse operator
+                // parse operator
                 tokens.add(new Token(TokenType.COMMA, Character.toString(c)));
                 i++;
             } else if (Character.isLetter(c)) {
@@ -134,7 +159,7 @@ public class LexicalSeparator {
                         ctr++;
                     }
                     String value2 = value + sb2.toString();
-                    
+
                     if (value2.equals("nvm tbh") || value2.equals("vibe check")) {
                         tokens.add(new Token(TokenType.KEYWORD, value2));
                     } else if (value.equals("nvm")) {   // if "tbh" is not detected for "nvm"
@@ -195,7 +220,7 @@ public class LexicalSeparator {
                     sb.append(input.charAt(i));
                     i++;
                     if (input.charAt(i) == '"') {
-                         sb.append(input.charAt(i));
+                        sb.append(input.charAt(i));
                         break;
                     }
                 }
@@ -209,6 +234,7 @@ public class LexicalSeparator {
                 throw new IllegalArgumentException("Unknown character: " + c);
             }
         }
+
         return tokens;
     }
 }
