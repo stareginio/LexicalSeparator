@@ -1,20 +1,34 @@
 package LexicalSeparator;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.io.FileWriter;
 
 public class SyntaxAnalyzer {
 
     private List<Token> tokens;
     private int currentTokenIndex;
 
+    private ArrayList<String> parseList = new ArrayList<String>();
+    ArrayList<String> tempList = new ArrayList<String>();
+    String varName;
+    String numVal;
+
     public void analyze(List<Token> tokens) throws Exception {
         this.tokens = tokens;
         this.currentTokenIndex = 0;
+        
         parseProgram();
+        
+        FileWriter parseWriter = new FileWriter("parseTree.txt");
+        for (String str : parseList) {
+            parseWriter.write(str + System.lineSeparator());
+        }
+        parseWriter.close();
     }
 
     private void parseProgram() throws Exception {
-        while (currentTokenIndex < tokens.size()) {           
+        while (currentTokenIndex < tokens.size()) {
             parseStatement();
         }
     }
@@ -22,8 +36,6 @@ public class SyntaxAnalyzer {
     private void parseStatement() throws Exception {
         TokenType currentTokenType = getCurrentTokenType();
         
-        System.out.println("currentTokenType: " + currentTokenType);
-
         if (currentTokenType == TokenType.DATATYPE) {
             parseVariableDeclaration();
             match(TokenType.SEMICOLON);
@@ -85,26 +97,40 @@ public class SyntaxAnalyzer {
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
                     match(TokenType.ASSIGNMENT_OPERATOR);
                     match(TokenType.OPENBRACE);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
                     if (getCurrentTokenType() == TokenType.COMMA) {
                         do {
                             match(TokenType.COMMA);
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.NUMBERS);
                         } while (getCurrentTokenType() == TokenType.COMMA);
                     }
                     match(TokenType.CLOSEBRACE);
+                    System.out.println(tempList);
+                    String str = genArrDigits();
+                    parseList.add("[<digits-awit-initialization> [digits[]][<variableName>[" + varName + "]][=][{][<arrDigitsValue>" + str + "[}][;]]");
                 }
             } else {
                 parseVariableName();
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
                     match(TokenType.ASSIGNMENT_OPERATOR);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
                     if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
                         do {
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.ARITH_OPERATOR);
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.NUMBERS);
                         } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+                        String abc = genMultiOp();
+                        parseList.add("[<digit_operation> [digits][<variableName>[" + varName + "]][=]" + genMultiOp()+ "[;]]");
+                    } else if (getCurrentTokenInput().equals(";")) {
+                        parseList.add("[<digits-initialization> [digits][<variableName>[" + varName + "]][=][<numbers>[" + numVal + "]][;]]");
                     }
+                } else if (getCurrentTokenInput().equals(";")) {
+                    parseList.add("[<digits-declaration> [digits][<variableName>[" + varName + "]][;]]");
                 }
             }
         } else if (getCurrentTokenInput().equals("lutang")) {
@@ -325,7 +351,6 @@ public class SyntaxAnalyzer {
             match(TokenType.CLOSEPARENTHESIS);
             match(TokenType.OPENBRACE);
             
-            // nts: debug
             parseStatement();  // statement
             
             match(TokenType.CLOSEBRACE);
@@ -371,8 +396,53 @@ public class SyntaxAnalyzer {
             throw new Exception("Expected token type " + expectedTokenType + ", but found " + getCurrentTokenType()
             + " with value " + getCurrentTokenInput() + " at token " + (currentTokenIndex + 1));
         }
+        switch (getCurrentTokenType()) {
+            case IDENTIFIER:
+                varName = getCurrentTokenInput();
+            case NUMBERS:
+                numVal = getCurrentTokenInput();    
+        }
         currentTokenIndex++;
     }
+
+    private String genMultiOp() {
+        String str = "";
+        int flag = 0;
+        for (String x : tempList) {
+            if (flag == 0) {
+                str = str + "[<numbers>[" + x + "]]";
+                flag = 1;
+            } else {
+                str = str + "[<arith_operator>[" + x + "]]";
+                flag = 0;
+            }
+        }
+        return str;
+    }
+
+    private String genArrDigits() {
+        String str = "";
+        int len = 0;
+        if (tempList.size() == 1) {
+            String num1 = tempList.get(0).toString();
+            str = "[<numbers>[" + num1 +"]]";
+        } else {
+           for (String x : tempList) {
+            if (len == tempList.size() - 1) {
+                continue;
+            }
+                str = str + "[<arrDigitsValue>";
+                len++;
+            }
+            }
+            for (String x : tempList) {
+                int i = tempList.size();
+                System.out.println(i);
+                    str = str + "[<numbers>[" + x + "]]]";
+                System.out.println(str);
+                }
+            return str;
+           }
 
     private TokenType getCurrentTokenType() {
         return tokens.get(currentTokenIndex).getType();
