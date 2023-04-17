@@ -277,6 +277,10 @@ public class LexicalSeparator {
                 // parse operator
                 tokens.add(new Token(TokenType.CLOSEBRACE, Character.toString(c)));
                 i++;
+            } else if (c == '.') {
+                // parse operator
+                tokens.add(new Token(TokenType.POINT, Character.toString(c)));
+                i++;
             } else if (c == '=') {
                 // parse assignment or comparison operator
                 if (i + 1 < input.length() && input.charAt(i + 1) == '=') {
