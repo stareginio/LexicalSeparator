@@ -32,12 +32,18 @@ public class LexicalSeparator {
                 for (String str : input) {
                     tokens = analyze(str);
 
-                    for (Token token : tokens) {
+                    for (Token token : tokens) { 
                         System.out.println(token);
                         output.add(token);
                         
-                        // throw error if <NUMBERS><IDENTIFIER>, <SYMBOL><IDENTIFIER>, OR <IDENTIFIER><SYMBOL> 
+                        // check for errors
                         if (output.size() > 1) {
+                            // check if UNKNOWN token
+                            if (token.getType() == TokenType.UNKNOWN) {
+                                throw new LexicalException("Unknown token: " + token.getValue());
+                            }
+                            
+                            // check if <NUMBERS><IDENTIFIER>, <SYMBOL><IDENTIFIER>, OR <IDENTIFIER><SYMBOL>
                             TokenType tokenTypePrev = output.get(output.size() - 2).getType();
                             TokenType tokenTypeNew = output.get(output.size() - 1).getType();
 
@@ -64,6 +70,7 @@ public class LexicalSeparator {
                     System.out.println("Valid statement");
                 } catch (Exception e) {
                     System.out.println("Syntax error: " + e.getMessage());
+                    System.out.println("Occurred at: " + e.getStackTrace()[0]);
                     System.out.println("Invalid statement");
 
                     // popup message for user
@@ -90,6 +97,7 @@ public class LexicalSeparator {
 
         List<Token> tokens = new ArrayList<>();
         int i = 0;
+        
         while (i < input.length()) {
             char c = input.charAt(i);
 
@@ -107,18 +115,59 @@ public class LexicalSeparator {
                 }
 
                 tokens.add(new Token(TokenType.NUMBERS, sb.toString()));
-            } else if (c == '-') {
+            } else if (c == '+') {
                 StringBuilder sb = new StringBuilder();
                 sb.append(c);
                 i++;
-                if (Character.isDigit(input.charAt(i))) {
+
+                if (Character.isDigit(input.charAt(i))) {   // check if NUMBERS
                     while (i < input.length() && Character.isDigit(input.charAt(i))) {
                         sb.append(input.charAt(i));
                         i++;
                     }
                     tokens.add(new Token(TokenType.NUMBERS, sb.toString()));
+                } else if (input.charAt(i) == '+') {    // check if UNARY_OPERATOR '++'
+                    if (i < input.length() && input.charAt(i) == '+') {                       
+                        sb.append(input.charAt(i));
+                        i++;
+
+                        if (i >= input.length()) {   // check if it has no other characters
+                            tokens.add(new Token(TokenType.UNARY_OPERATOR, sb.toString()));
+                        } else {
+                            tokens.add(new Token(TokenType.UNKNOWN, sb.toString() + "..."));
+                        }
+                    } else {
+                        tokens.add(new Token(TokenType.UNKNOWN, sb.toString()));
+                    }
                 } else {
                     tokens.add(new Token(TokenType.SYMBOL, sb.toString()));
+                }
+            } else if (c == '-') {
+                StringBuilder sb = new StringBuilder();
+                sb.append(c);
+                i++;
+
+                if (Character.isDigit(input.charAt(i))) {   // check if NUMBERS
+                    while (i < input.length() && Character.isDigit(input.charAt(i))) {
+                        sb.append(input.charAt(i));
+                        i++;
+                    }
+                    tokens.add(new Token(TokenType.NUMBERS, sb.toString()));
+                } else if (input.charAt(i) == '-') {    // check if UNARY_OPERATOR '--'
+                    if (i < input.length() && input.charAt(i) == '-') {                       
+                        sb.append(input.charAt(i));
+                        i++;
+
+                        if (i >= input.length()) {   // check if it has no other characters
+                            tokens.add(new Token(TokenType.UNARY_OPERATOR, sb.toString()));
+                        } else {
+                            tokens.add(new Token(TokenType.UNKNOWN, sb.toString() + "..."));
+                        }
+                    } else {
+                        tokens.add(new Token(TokenType.UNKNOWN, sb.toString()));
+                    }
+                } else {
+                    tokens.add(new Token(TokenType.UNKNOWN, sb.toString()));
                 }
             } else if (c == ',') {
                 // parse operator
@@ -247,7 +296,7 @@ public class LexicalSeparator {
                 i++;
             } else {
                 // unknown character
-                throw new IllegalArgumentException("Unknown character: " + c);
+                tokens.add(new Token(TokenType.UNKNOWN, Character.toString(c)));
             }
         }
 
