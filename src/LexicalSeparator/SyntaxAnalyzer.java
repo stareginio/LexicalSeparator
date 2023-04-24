@@ -46,7 +46,7 @@ public class SyntaxAnalyzer {
             match(TokenType.SEMICOLON);
         } else if (currentTokenType == TokenType.KEYWORD) {
             parseKeyword();
-        } else if (currentTokenType == TokenType.NUMBERS) {
+        } else if (currentTokenType == TokenType.NUMBERS) {            
             match(TokenType.NUMBERS);
             parseArithOp();
             match(TokenType.SEMICOLON);
@@ -220,28 +220,119 @@ public class SyntaxAnalyzer {
     }
 
     private void parseArithOp() throws Exception {
+        String prevNumbers = tokens.get(currentTokenIndex-1).getValue();
+        ArrayList<String> valuesList = new ArrayList();
+        String result = "";
+        
         if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
             do {
                 match(TokenType.ARITH_OPERATOR);
+                String arithOp = tokens.get(currentTokenIndex-1).getValue();
                 match(TokenType.NUMBERS);
+                String numbers = tokens.get(currentTokenIndex-1).getValue();
+                
+                // store values
+                valuesList.add(arithOp + "," + numbers);
             } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+            
+            for (int i = valuesList.size()-1 ; i >= 0 ; i--) {
+                String[] split = valuesList.get(i).split(",");
+                String arithOp = split[0];
+                String numbers = split[1];
+                String newResult = "";
+
+                // check if last item
+                if (i-1 < 0) {
+                    newResult  = " [<arith-operation> [<numbers> [" + prevNumbers + "]]]"
+                            + " [<arith-operator> [" + arithOp + "]]"
+                            + " [<arith-operation> [<numbers> [" + numbers + "]]]";
+                } else {
+                    newResult = " [<arith-operation>]"
+                            + " [<arith-operator> [" + arithOp + "]]"
+                            + " [<arith-operation> [<numbers> [" + numbers + "]]]";
+                }
+                
+                // check if also first item
+                if (!result.contains("<arith-operation>")) {
+                    result = newResult;
+                } else {
+                    result = result.replace("[<arith-operation>]", "[<arith-operation> " + newResult + "]");
+                }
+                
+                valuesList.remove(i);
+            }
+            
+            parseList.add("[<arith-operation2> " + result.trim() + "]");
         } else if (getCurrentTokenType() == TokenType.POINT) {
             match(TokenType.POINT);
             match(TokenType.NUMBERS);
+            prevNumbers = prevNumbers + "." + tokens.get(currentTokenIndex-1).getValue();
+            
             if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
                 do {
                     match(TokenType.ARITH_OPERATOR);
+                    String arithOp = tokens.get(currentTokenIndex-1).getValue();
                     match(TokenType.NUMBERS);
+                    String numbers = tokens.get(currentTokenIndex-1).getValue();
                     match(TokenType.POINT);
                     match(TokenType.NUMBERS);
+                    numbers += "." + tokens.get(currentTokenIndex-1).getValue();
+                    
+                    // store values
+                    valuesList.add(arithOp + "," + numbers);
                 } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+                
+                for (int i = valuesList.size()-1 ; i >= 0 ; i--) {
+                    String[] split = valuesList.get(i).split(",");
+                    String arithOp = split[0];
+                    String numbers = split[1];
+                    String newResult = "";
+
+                    // check if last item
+                    if (i-1 < 0) {
+                        newResult  = " [<arith-operation> [<numbers> [" + prevNumbers + "]]]"
+                                + " [<arith-operator> [" + arithOp + "]]"
+                                + " [<arith-operation> [<numbers> [" + numbers + "]]]";
+                    } else {
+                        newResult = " [<arith-operation>]"
+                                + " [<arith-operator> [" + arithOp + "]]"
+                                + " [<arith-operation> [<numbers> [" + numbers + "]]]";
+                    }
+
+                    // check if also first item
+                    if (!result.contains("<arith-operation>")) {
+                        result = newResult;
+                    } else {
+                        result = result.replace("[<arith-operation>]", "[<arith-operation> " + newResult + "]");
+                    }
+
+                    valuesList.remove(i);
+                }
+
+                parseList.add("[<arith-operation2> " + result.trim() + "]");
             }
         } else if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
             match(TokenType.REL_OPERATOR);
-            if (getCurrentTokenType() == TokenType.IDENTIFIER
-                    || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+            String relOp = tokens.get(currentTokenIndex-1).getValue();
+            String type = "";
+            String value = "";
+            
+            // check if variable or value
+            if (getCurrentTokenType() == TokenType.IDENTIFIER) { 
                 currentTokenIndex++;
+                type = "<identifier>";
+                value = tokens.get(currentTokenIndex-1).getValue();
+            } else if (getCurrentTokenType() == TokenType.NUMBERS) {
+                currentTokenIndex++;
+                type = "<numbers>";
+                value = tokens.get(currentTokenIndex-1).getValue();
             }
+            
+            result = "[<numbers> [" + prevNumbers + "]]"
+                    + " [<rel-operator> [" + relOp + "]]"
+                    + " [" + type + " [" + value + "]]" ;
+            
+            parseList.add("[<rel-expression> " + result.trim() + "]");
         } else {
             throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
         }
