@@ -2,6 +2,7 @@ package LexicalSeparator;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.io.FileWriter;
 
 public class SyntaxAnalyzer {
@@ -13,13 +14,14 @@ public class SyntaxAnalyzer {
     ArrayList<String> tempList = new ArrayList<String>();
     String varName;
     String numVal;
+    String strVal;
 
     public void analyze(List<Token> tokens) throws Exception {
         this.tokens = tokens;
         this.currentTokenIndex = 0;
-        
+
         parseProgram();
-        
+
         FileWriter parseWriter = new FileWriter("parseTree.txt");
         for (String str : parseList) {
             parseWriter.write(str + System.lineSeparator());
@@ -35,7 +37,7 @@ public class SyntaxAnalyzer {
 
     private void parseStatement() throws Exception {
         TokenType currentTokenType = getCurrentTokenType();
-        
+
         if (currentTokenType == TokenType.DATATYPE) {
             parseVariableDeclaration();
             match(TokenType.SEMICOLON);
@@ -66,25 +68,42 @@ public class SyntaxAnalyzer {
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
                     match(TokenType.ASSIGNMENT_OPERATOR);
                     match(TokenType.OPENBRACE);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.STRING_LITERAL);
                     if (getCurrentTokenType() == TokenType.COMMA) {
                         do {
                             match(TokenType.COMMA);
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.STRING_LITERAL);
                         } while (getCurrentTokenType() == TokenType.COMMA);
                     }
                     match(TokenType.CLOSEBRACE);
-                }
+                    System.out.println(tempList);
+                    String str = genArrYarn();
+                    parseList.add("[<yarn-awit-initialization> [yarn[]][<variableName>[" + varName + "]][=][{][<arrYarnValue>" + str + "[}][;]]");
+                } 
             } else {
                 parseVariableName();
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
                     match(TokenType.ASSIGNMENT_OPERATOR);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.STRING_LITERAL);
-                    while (getCurrentTokenInput().equals("lahamz")) {
-                        match(TokenType.ARITH_OPERATOR);
-                        match(TokenType.STRING_LITERAL);
-                        System.out.println(getCurrentTokenType());
+                    if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+                        do {
+                            tempList.add(getCurrentTokenInput());
+                            match(TokenType.ARITH_OPERATOR);
+                            tempList.add(getCurrentTokenInput());
+                            match(TokenType.STRING_LITERAL);
+                            System.out.println(getCurrentTokenType());
+                        } while (getCurrentTokenInput().equals("lahamz"));
+                        String abc = genYarnOp();
+                        parseList.add("[<yarn_operation> [yarn][<variableName>[" + varName + "]][=]" + genYarnOp()
+                                + "[;]]");
+                    } else if (getCurrentTokenInput().equals(";")) {
+                        parseList.add("[<yarn-initialization> [yarn][<variableName>[" + varName + "]][=][<string-literal>[" + strVal + "]][;]]");
                     }
+                } else if (getCurrentTokenInput().equals(";")){
+                    parseList.add("[<yarn_declaration> [yarn][<variableName>[" + varName + "]][;]]");
                 }
             }
 
@@ -124,8 +143,9 @@ public class SyntaxAnalyzer {
                             tempList.add(getCurrentTokenInput());
                             match(TokenType.NUMBERS);
                         } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
-                        String abc = genMultiOp();
-                        parseList.add("[<digit_operation> [digits][<variableName>[" + varName + "]][=]" + genMultiOp()+ "[;]]");
+                        String abc = genDigitsOp();
+                        parseList.add("[<digit_operation> [digits][<variableName>[" + varName + "]][=]" + genDigitsOp()
+                                + "[;]]");
                     } else if (getCurrentTokenInput().equals(";")) {
                         parseList.add("[<digits-initialization> [digits][<variableName>[" + varName + "]][=][<numbers>[" + numVal + "]][;]]");
                     }
@@ -142,34 +162,58 @@ public class SyntaxAnalyzer {
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
                     match(TokenType.ASSIGNMENT_OPERATOR);
                     match(TokenType.OPENBRACE);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
                     match(TokenType.POINT);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
                     if (getCurrentTokenType() == TokenType.COMMA) {
                         do {
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.COMMA);
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.NUMBERS);
                             match(TokenType.POINT);
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.NUMBERS);
                         } while (getCurrentTokenType() == TokenType.COMMA);
+
                     }
                     match(TokenType.CLOSEBRACE);
+                    String str = genArrLutang();
+                    parseList.add("[<lutang_awit_initialization> [digits[]][<variableName>[" + varName
+                            + "]][=][{][<arrLutangValue>" + str + "[}][;]]");
                 }
             } else {
                 parseVariableName();
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
                     match(TokenType.ASSIGNMENT_OPERATOR);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
                     match(TokenType.POINT);
+                    tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
                     if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
                         do {
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.ARITH_OPERATOR);
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.NUMBERS);
                             match(TokenType.POINT);
+                            tempList.add(getCurrentTokenInput());
                             match(TokenType.NUMBERS);
                         } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+                        String abc = genLutangOp();
+                        parseList.add("[<lutang_operation> [lutang][<variableName>[" + varName + "]][=]" + genLutangOp()
+                                + "[;]]");
+                    } else {
+                        String n1 = tempList.get(0);
+                        String n2 = tempList.get(1);
+                        parseList.add("[<lutang_initialization> [lutang][<variableName>[" + varName + "]][=][<numbers>["
+                                + n1 + "]][.][<numbers>[" + n2 + "]][;]]");
                     }
+                } else {
+                    parseList.add("[<lutang_declaration> [lutang][<variableName>[" + varName + "]][;]]");
                 }
             }
         }
@@ -192,6 +236,47 @@ public class SyntaxAnalyzer {
                     match(TokenType.NUMBERS);
                 } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
             }
+        } else if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
+            match(TokenType.REL_OPERATOR);
+            if (getCurrentTokenType() == TokenType.IDENTIFIER
+                    || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+                currentTokenIndex++;
+            }
+        } else {
+            throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
+        }
+    }
+
+    private void parseLogicalOp() throws Exception {
+        Token currentToken = getCurrentToken();
+
+        if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
+            do {
+                if (currentToken.getValue().equals("naur")) {
+                    match(TokenType.LOGIC_OPERATOR);
+                    if (getCurrentTokenType() == TokenType.OPENPARENTHESIS) {
+                        match(TokenType.OPENPARENTHESIS);
+                        parseConditionNumbers();
+                        match(TokenType.CLOSEPARENTHESIS);
+                    } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
+                        match(TokenType.IDENTIFIER);
+                    }
+                } else if (currentToken.getValue().equals("naol") || currentToken.getValue().equals("edewups")) {
+                    match(TokenType.LOGIC_OPERATOR);
+                    if (currentToken.getValue().equals("naur")) { // something wrong
+                        match(TokenType.LOGIC_OPERATOR);
+                        if (getCurrentTokenType() == TokenType.OPENPARENTHESIS) {
+                            match(TokenType.OPENPARENTHESIS);
+                            parseConditionNumbers();
+                            match(TokenType.CLOSEPARENTHESIS);
+                        } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
+                            match(TokenType.IDENTIFIER);
+                        }
+                    } // walang else
+                } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
+                    match(TokenType.IDENTIFIER);
+                }
+            } while (getCurrentTokenType() == TokenType.LOGIC_OPERATOR);
         } else {
             throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
         }
@@ -215,7 +300,7 @@ public class SyntaxAnalyzer {
             match(TokenType.ASSIGNMENT_OPERATOR);
             parseExpression();
         }
-        
+
         if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
             do {
                 match(TokenType.ARITH_OPERATOR);
@@ -226,41 +311,55 @@ public class SyntaxAnalyzer {
                 }
             } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
         }
+
+        if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
+            match(TokenType.REL_OPERATOR);
+            if (getCurrentTokenType() == TokenType.IDENTIFIER
+                    || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+                currentTokenIndex++;
+            }
+        }
     }
 
     private void parseVariableName() throws Exception {
         match(TokenType.IDENTIFIER);
     }
 
-    private void parseKeyword() throws Exception {       
+    private void parseKeyword() throws Exception {
         if (getCurrentTokenInput().equals("tbh")) {    //if / if-else chain / if-else statement
             match(TokenType.KEYWORD);
-            
+
             match(TokenType.OPENPARENTHESIS);
             parseConditionNumbers();
+            if(getCurrentTokenType() == TokenType.LOGIC_OPERATOR){
+		parseLogicalOp();
+		}
             match(TokenType.CLOSEPARENTHESIS);
-            
+
             match(TokenType.OPENBRACE);
             parseStatement();
             match(TokenType.CLOSEBRACE);
-            
+
             System.out.println("getCurrentTokenInput() after tbh: " + getCurrentTokenInput());
             System.out.println("getCurrentTokenType() after tbh: " + getCurrentTokenType());
-            System.out.println("ccurrentTokenIndex after tbh: " + (currentTokenIndex + 1));
-            
+            System.out.println("currentTokenIndex after tbh: " + (currentTokenIndex + 1));
+
             // check for "else if" statement/s
             while (getCurrentTokenInput().equals("nvm tbh")) {
                 match(TokenType.KEYWORD);
-                    
+
                 match(TokenType.OPENPARENTHESIS);
                 parseConditionNumbers();
+                if(getCurrentTokenType() == TokenType.LOGIC_OPERATOR){
+		parseLogicalOp();
+		}
                 match(TokenType.CLOSEPARENTHESIS);
 
                 match(TokenType.OPENBRACE);
                 parseStatement();
                 match(TokenType.CLOSEBRACE);
             }
-            
+
             // check for "else" statement
             if (getCurrentTokenInput().equals("nvm")) {
                 match(TokenType.KEYWORD);
@@ -273,7 +372,7 @@ public class SyntaxAnalyzer {
         } else if (getCurrentTokenInput().equals("g")) {   // do-while loop
             match(TokenType.KEYWORD);
             match(TokenType.OPENBRACE);
-            
+
             // check if iteration
             int nextTokenIndex = currentTokenIndex + 1;
             if ((getCurrentTokenType() == TokenType.UNARY_OPERATOR
@@ -284,25 +383,28 @@ public class SyntaxAnalyzer {
             } else {
                 parseStatement();
             }
-            
+
             match(TokenType.CLOSEBRACE);
-            
+
             // throw error if vibe check keyword is not detected
             if (getCurrentTokenType() != TokenType.KEYWORD
                     && !getCurrentTokenInput().equals("vibe check")) {
-                 throw new Exception("Expected keyword vibe check, but found " + getCurrentTokenType());
+                throw new Exception("Expected keyword vibe check, but found " + getCurrentTokenType());
             } else {
                 match(TokenType.KEYWORD);
-            
+
                 match(TokenType.OPENPARENTHESIS);
                 parseConditionNumbers();
+                if(getCurrentTokenType() == TokenType.LOGIC_OPERATOR){
+		parseLogicalOp();
+		}
                 match(TokenType.CLOSEPARENTHESIS);
-                
+
                 match(TokenType.SEMICOLON);
             }
         } else if (getCurrentTokenInput().equals("vibe check")) {  // while loop
             match(TokenType.KEYWORD);
-            
+
             match(TokenType.OPENPARENTHESIS);
             parseConditionNumbers();
             match(TokenType.CLOSEPARENTHESIS);
@@ -328,7 +430,7 @@ public class SyntaxAnalyzer {
         } else if (getCurrentTokenInput().equals("forda")) {   // for loop           
             match(TokenType.KEYWORD);
             match(TokenType.OPENPARENTHESIS);
-            
+
             // check if digits initialization
             if (getCurrentTokenInput().equals("digits")) {
                 match(TokenType.DATATYPE);
@@ -341,24 +443,24 @@ public class SyntaxAnalyzer {
             } else {
                 throw new Exception("Expected digits expression, but found " + getCurrentTokenInput());
             }
-            
+
             match(TokenType.SEMICOLON);
             parseConditionNumbers();    // condition involving numbers
-            
+
             match(TokenType.SEMICOLON);
             parseIteration();   // iteration
-            
+
             match(TokenType.CLOSEPARENTHESIS);
             match(TokenType.OPENBRACE);
-            
+
             parseStatement();  // statement
-            
+
             match(TokenType.CLOSEBRACE);
         } else {
             throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
         }
     }
-    
+
     private void parseExpression() throws Exception {
         TokenType currentTokenType = getCurrentTokenType();
 
@@ -381,7 +483,7 @@ public class SyntaxAnalyzer {
             match(TokenType.UNARY_OPERATOR);
         }
     }
-    
+
     private void parseConditionNumbers() throws Exception {
         match(TokenType.IDENTIFIER);
         match(TokenType.REL_OPERATOR);
@@ -390,59 +492,163 @@ public class SyntaxAnalyzer {
             currentTokenIndex++;
         }
     }
-    
+
     private void match(TokenType expectedTokenType) throws Exception {
         if (getCurrentTokenType() != expectedTokenType) {
             throw new Exception("Expected token type " + expectedTokenType + ", but found " + getCurrentTokenType()
-            + " with value " + getCurrentTokenInput() + " at token " + (currentTokenIndex + 1));
+                    + " with value " + getCurrentTokenInput() + " at token " + (currentTokenIndex + 1));
         }
         switch (getCurrentTokenType()) {
             case IDENTIFIER:
                 varName = getCurrentTokenInput();
             case NUMBERS:
-                numVal = getCurrentTokenInput();    
+                numVal = getCurrentTokenInput();
+            case STRING_LITERAL:
+                strVal = getCurrentTokenInput();
         }
         currentTokenIndex++;
     }
 
-    private String genMultiOp() {
+    private String genDigitsOp() {
         String str = "";
-        int flag = 0;
+        int flg = 0;
         for (String x : tempList) {
-            if (flag == 0) {
+            if (flg == 0) {
                 str = str + "[<numbers>[" + x + "]]";
-                flag = 1;
+                flg = 1;
             } else {
                 str = str + "[<arith_operator>[" + x + "]]";
-                flag = 0;
+                flg = 0;
             }
         }
         return str;
     }
+    
+    private String genYarnOp() {
+        String str = "";
+        int flg = 0;
+        for (String x : tempList) {
+            if (flg == 0) {
+                str = str + "[<string-literal>[" + x + "]]";
+                flg = 1;
+            } else {
+                str = str + "[<arith_operator>[" + x + "]]";
+                flg = 0;
+            }
+        }
+        return str;
+    }
+    
+    private String genArrYarn() {
+        String str = "";
+        int len = 0;
+        if (tempList.size() == 1) {
+            String num1 = tempList.get(0).toString();
+            str = "[<string-literal>[" + num1 + "]]]";
+        } else {
+            for (String x : tempList) {
+                if (len == tempList.size() - 1) {
+                    continue;
+                }
+                str = str + "[<arrYarnValue>";
+                len++;
+            }
 
+            for (String x : tempList) {
+                if (x != tempList.get(0)) {
+                    str = str + "[,]";
+                }
+                int i = tempList.size();
+                System.out.println(i);
+                str = str + "[<string-literal>[" + x + "]]]";
+                System.out.println(str);
+            }
+        }
+
+        return str;
+    }
+    
     private String genArrDigits() {
         String str = "";
         int len = 0;
         if (tempList.size() == 1) {
             String num1 = tempList.get(0).toString();
-            str = "[<numbers>[" + num1 +"]]";
+            str = "[<numbers>[" + num1 + "]]]";
         } else {
-           for (String x : tempList) {
-            if (len == tempList.size() - 1) {
-                continue;
-            }
+            for (String x : tempList) {
+                if (len == tempList.size() - 1) {
+                    continue;
+                }
                 str = str + "[<arrDigitsValue>";
                 len++;
             }
-            }
+
             for (String x : tempList) {
+                if (x != tempList.get(0)) {
+                    str = str + "[,]";
+                }
                 int i = tempList.size();
                 System.out.println(i);
-                    str = str + "[<numbers>[" + x + "]]]";
+                str = str + "[<numbers>[" + x + "]]]";
                 System.out.println(str);
+            }
+        }
+
+        return str;
+    }
+
+    private String genLutangOp() {
+        String str = "";
+        int flg = 0;
+        for (String x : tempList) {
+            if (flg == 0) {
+                str = str + "[<numbers>[" + x + "]]";
+                flg++;
+            } else if (flg == 1) {
+                str = str + "[.][<numbers>[" + x + "]]";
+                flg++;
+            } else {
+                str = str + "[<arith_operator>[" + x + "]]";
+                flg = 0;
+            }
+        }
+        return str;
+    }
+
+    private String genArrLutang() {
+        String str = "";
+        int len = Collections.frequency(tempList, ",") + 1;
+        int flg = 0;
+        System.out.println(len);
+
+        if (tempList.size() == 2) {
+            System.out.println(tempList);
+            String num1 = tempList.get(0).toString();
+            String num2 = tempList.get(1).toString();
+            str = "[<numbers>[" + num1 + "]][.][<numbers>[" + num2 + "]]]";
+        } else {
+            System.out.println(tempList.size());
+            for (int i = 0; i < len; i++) {
+                str = str + "[<arrLutangValue>";
+            }
+
+            for (String x : tempList) {
+
+                if (x.equals(",")) {
+                    str = str + "[,]";
+                } else if (flg == 1) {
+                    str = str + "[.][<numbers>[" + x + "]]]";
+                    flg = 0;
+                } else if (flg == 0) {
+                    str = str + "[<numbers>[" + x + "]]";
+                    flg++;
                 }
-            return str;
-           }
+            }
+
+            System.out.println(str);
+        }
+        return str;
+    }
 
     private TokenType getCurrentTokenType() {
         return tokens.get(currentTokenIndex).getType();
