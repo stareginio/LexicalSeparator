@@ -46,7 +46,7 @@ public class SyntaxAnalyzer {
             match(TokenType.SEMICOLON);
         } else if (currentTokenType == TokenType.KEYWORD) {
             parseKeyword();
-        } else if (currentTokenType == TokenType.NUMBERS) {            
+        } else if (currentTokenType == TokenType.NUMBERS) {
             match(TokenType.NUMBERS);
             parseArithOp();
             match(TokenType.SEMICOLON);
@@ -81,7 +81,7 @@ public class SyntaxAnalyzer {
                     System.out.println(tempList);
                     String str = genArrYarn();
                     parseList.add("[<yarn-awit-initialization> [yarn[]][<variableName>[" + varName + "]][=][{][<arrYarnValue>" + str + "[}][;]]");
-                } 
+                }
             } else {
                 parseVariableName();
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
@@ -102,7 +102,7 @@ public class SyntaxAnalyzer {
                     } else if (getCurrentTokenInput().equals(";")) {
                         parseList.add("[<yarn-initialization> [yarn][<variableName>[" + varName + "]][=][<string-literal>[" + strVal + "]][;]]");
                     }
-                } else if (getCurrentTokenInput().equals(";")){
+                } else if (getCurrentTokenInput().equals(";")) {
                     parseList.add("[<yarn_declaration> [yarn][<variableName>[" + varName + "]][;]]");
                 }
             }
@@ -347,29 +347,61 @@ public class SyntaxAnalyzer {
                     match(TokenType.LOGIC_OPERATOR);
                     if (getCurrentTokenType() == TokenType.OPENPARENTHESIS) {
                         match(TokenType.OPENPARENTHESIS);
-                        parseConditionNumbers();
+                        checkRelorLog();
                         match(TokenType.CLOSEPARENTHESIS);
                     } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
                         match(TokenType.IDENTIFIER);
+                        if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
+                            checkRelorLog();
+                        }
+                    } else if (getCurrentTokenType() == TokenType.NUMBERS) {
+                        match(TokenType.NUMBERS);
+                        if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
+                            checkRelorLog();
+                        }
                     }
                 } else if (currentToken.getValue().equals("naol") || currentToken.getValue().equals("edewups")) {
                     match(TokenType.LOGIC_OPERATOR);
-                    if (currentToken.getValue().equals("naur")) { // something wrong
-                        match(TokenType.LOGIC_OPERATOR);
-                        if (getCurrentTokenType() == TokenType.OPENPARENTHESIS) {
-                            match(TokenType.OPENPARENTHESIS);
-                            parseConditionNumbers();
-                            match(TokenType.CLOSEPARENTHESIS);
-                        } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
-                            match(TokenType.IDENTIFIER);
+                    if (getCurrentTokenType() == TokenType.IDENTIFIER) {
+                        match(TokenType.IDENTIFIER);
+                        checkRelorLog();
+                    } else if (getCurrentTokenType() == TokenType.NUMBERS) {
+                        match(TokenType.NUMBERS);
+                        if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
+                            checkRelorLog();
                         }
-                    } // walang else
-                } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
-                    match(TokenType.IDENTIFIER);
+                    }
                 }
             } while (getCurrentTokenType() == TokenType.LOGIC_OPERATOR);
-        } else {
-            throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
+        }
+    }
+
+    private void checkRelorLog() throws Exception {
+
+        if (getCurrentTokenType() == TokenType.NUMBERS) {
+            match(TokenType.NUMBERS);
+            parseConditionNumbers();
+            if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
+                parseLogicalOp();
+            }
+        } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
+            match(TokenType.IDENTIFIER);
+            if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
+                parseConditionNumbers();
+                if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
+                    Token currentToken = getCurrentToken();
+                    if (currentToken.getValue().equals("naol") || currentToken.getValue().equals("edewups")) {
+                        parseLogicalOp();
+                    }
+                }
+            } else if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
+                parseLogicalOp();
+            }
+
+        } else if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
+            parseLogicalOp();
+        } else if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
+            parseConditionNumbers();
         }
     }
 
@@ -421,49 +453,42 @@ public class SyntaxAnalyzer {
             match(TokenType.KEYWORD);
 
             match(TokenType.OPENPARENTHESIS);
-            parseConditionNumbers();
-            if(getCurrentTokenType() == TokenType.LOGIC_OPERATOR){
-		parseLogicalOp();
-		}
+            checkRelorLog();
             match(TokenType.CLOSEPARENTHESIS);
 
             match(TokenType.OPENBRACE);
             parseStatement();
             match(TokenType.CLOSEBRACE);
 
-            System.out.println("getCurrentTokenInput() after tbh: " + getCurrentTokenInput());
-            System.out.println("getCurrentTokenType() after tbh: " + getCurrentTokenType());
-            System.out.println("currentTokenIndex after tbh: " + (currentTokenIndex + 1));
-
             // check for "else if" statement/s
-            while (getCurrentTokenInput().equals("nvm tbh")) {
-                match(TokenType.KEYWORD);
+            if (currentTokenIndex < tokens.size()) {
+                while (getCurrentTokenInput().equals("nvm tbh")) {
+                    match(TokenType.KEYWORD);
 
-                match(TokenType.OPENPARENTHESIS);
-                parseConditionNumbers();
-                if(getCurrentTokenType() == TokenType.LOGIC_OPERATOR){
-		parseLogicalOp();
-		}
-                match(TokenType.CLOSEPARENTHESIS);
+                    match(TokenType.OPENPARENTHESIS);
 
-                match(TokenType.OPENBRACE);
-                parseStatement();
-                match(TokenType.CLOSEBRACE);
-            }
+                    checkRelorLog();
+                    match(TokenType.CLOSEPARENTHESIS);
 
-            // check for "else" statement
-            if (getCurrentTokenInput().equals("nvm")) {
-                match(TokenType.KEYWORD);
-                match(TokenType.OPENBRACE);
-                parseStatement();
-                match(TokenType.CLOSEBRACE);
+                    match(TokenType.OPENBRACE);
+                    parseStatement();
+                    match(TokenType.CLOSEBRACE);
+                }
+
+                // check for "else" statement
+                if (getCurrentTokenInput().equals("nvm")) {
+                    match(TokenType.KEYWORD);
+                    match(TokenType.OPENBRACE);
+                    parseStatement();
+                    match(TokenType.CLOSEBRACE);
+                }
             }
         } else if (getCurrentTokenInput().equals("nvm tbh") || getCurrentTokenInput().equals("nvm")) {
             throw new Exception("Keyword " + getCurrentTokenType() + " found without a previous 'tbh' statement");
         } else if (getCurrentTokenInput().equals("g")) {   // do-while loop
             match(TokenType.KEYWORD);
             match(TokenType.OPENBRACE);
-
+            
             // check if iteration
             int nextTokenIndex = currentTokenIndex + 1;
             if ((getCurrentTokenType() == TokenType.UNARY_OPERATOR
@@ -485,10 +510,7 @@ public class SyntaxAnalyzer {
                 match(TokenType.KEYWORD);
 
                 match(TokenType.OPENPARENTHESIS);
-                parseConditionNumbers();
-                if(getCurrentTokenType() == TokenType.LOGIC_OPERATOR){
-		parseLogicalOp();
-		}
+                checkRelorLog();
                 match(TokenType.CLOSEPARENTHESIS);
 
                 match(TokenType.SEMICOLON);
@@ -496,8 +518,13 @@ public class SyntaxAnalyzer {
         } else if (getCurrentTokenInput().equals("vibe check")) {  // while loop
             match(TokenType.KEYWORD);
 
+            if (getCurrentTokenType() == TokenType.IDENTIFIER
+                    || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+                currentTokenIndex++;
+            }
+
             match(TokenType.OPENPARENTHESIS);
-            parseConditionNumbers();
+            checkRelorLog();
             match(TokenType.CLOSEPARENTHESIS);
 
             match(TokenType.OPENBRACE);
@@ -536,7 +563,7 @@ public class SyntaxAnalyzer {
             }
 
             match(TokenType.SEMICOLON);
-            parseConditionNumbers();    // condition involving numbers
+            checkRelorLog();    // condition involving numbers
 
             match(TokenType.SEMICOLON);
             parseIteration();   // iteration
@@ -576,10 +603,8 @@ public class SyntaxAnalyzer {
     }
 
     private void parseConditionNumbers() throws Exception {
-        match(TokenType.IDENTIFIER);
         match(TokenType.REL_OPERATOR);
-        if (getCurrentTokenType() == TokenType.IDENTIFIER
-                || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+        if (getCurrentTokenType() == TokenType.IDENTIFIER || getCurrentTokenType() == TokenType.NUMBERS) { 
             currentTokenIndex++;
         }
     }
@@ -614,7 +639,7 @@ public class SyntaxAnalyzer {
         }
         return str;
     }
-    
+
     private String genYarnOp() {
         String str = "";
         int flg = 0;
@@ -629,7 +654,7 @@ public class SyntaxAnalyzer {
         }
         return str;
     }
-    
+
     private String genArrYarn() {
         String str = "";
         int len = 0;
@@ -658,7 +683,7 @@ public class SyntaxAnalyzer {
 
         return str;
     }
-    
+
     private String genArrDigits() {
         String str = "";
         int len = 0;
