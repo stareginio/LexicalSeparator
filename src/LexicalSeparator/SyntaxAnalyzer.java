@@ -137,15 +137,9 @@ public class SyntaxAnalyzer {
                     tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
                     if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
-                        do {
-                            tempList.add(getCurrentTokenInput());
-                            match(TokenType.ARITH_OPERATOR);
-                            tempList.add(getCurrentTokenInput());
-                            match(TokenType.NUMBERS);
-                        } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
-                        String abc = genDigitsOp();
-                        parseList.add("[<digit_operation> [digits][<variableName>[" + varName + "]][=]" + genDigitsOp()
-                                + "[;]]");
+                        parseList.add("[<digit_operation> [digits][<variableName>[" + varName + "]][=]");
+                        parseArithOp();
+                        parseList.add("[;]");
                     } else if (getCurrentTokenInput().equals(";")) {
                         parseList.add("[<digits-initialization> [digits][<variableName>[" + varName + "]][=][<numbers>[" + numVal + "]][;]]");
                     }
@@ -187,30 +181,20 @@ public class SyntaxAnalyzer {
             } else {
                 parseVariableName();
                 if (getCurrentTokenType() == TokenType.ASSIGNMENT_OPERATOR) {
-                    match(TokenType.ASSIGNMENT_OPERATOR);
+                    match(TokenType.ASSIGNMENT_OPERATOR);  
                     tempList.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
-                    match(TokenType.POINT);
-                    tempList.add(getCurrentTokenInput());
-                    match(TokenType.NUMBERS);
-                    if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
-                        do {
-                            tempList.add(getCurrentTokenInput());
-                            match(TokenType.ARITH_OPERATOR);
-                            tempList.add(getCurrentTokenInput());
-                            match(TokenType.NUMBERS);
-                            match(TokenType.POINT);
-                            tempList.add(getCurrentTokenInput());
-                            match(TokenType.NUMBERS);
-                        } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
-                        String abc = genLutangOp();
-                        parseList.add("[<lutang_operation> [lutang][<variableName>[" + varName + "]][=]" + genLutangOp()
-                                + "[;]]");
-                    } else {
-                        String n1 = tempList.get(0);
-                        String n2 = tempList.get(1);
+                    if (getTokenInputLutang() == TokenType.ARITH_OPERATOR) {
+                        parseList.add("[<lutang_operation> [lutang][<variableName>[" + varName + "]][=]");
+                        parseArithOp();
+                        parseList.add("[;]");
+                    } else if (getCurrentTokenType() == TokenType.POINT){
+                        String numbers = tokens.get(currentTokenIndex - 1).getValue();
+                        match(TokenType.POINT);
+                        match(TokenType.NUMBERS);
+                        numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
                         parseList.add("[<lutang_initialization> [lutang][<variableName>[" + varName + "]][=][<numbers>["
-                                + n1 + "]][.][<numbers>[" + n2 + "]][;]]");
+                                + numbers + "]][;]]");
                     }
                 } else {
                     parseList.add("[<lutang_declaration> [lutang][<variableName>[" + varName + "]][;]]");
@@ -220,30 +204,30 @@ public class SyntaxAnalyzer {
     }
 
     private void parseArithOp() throws Exception {
-        String prevNumbers = tokens.get(currentTokenIndex-1).getValue();
+        String prevNumbers = tokens.get(currentTokenIndex - 1).getValue();
         ArrayList<String> valuesList = new ArrayList();
         String result = "";
-        
+
         if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
             do {
                 match(TokenType.ARITH_OPERATOR);
-                String arithOp = tokens.get(currentTokenIndex-1).getValue();
+                String arithOp = tokens.get(currentTokenIndex - 1).getValue();
                 match(TokenType.NUMBERS);
-                String numbers = tokens.get(currentTokenIndex-1).getValue();
-                
+                String numbers = tokens.get(currentTokenIndex - 1).getValue();
+
                 // store values
                 valuesList.add(arithOp + "," + numbers);
             } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
-            
-            for (int i = valuesList.size()-1 ; i >= 0 ; i--) {
+
+            for (int i = valuesList.size() - 1; i >= 0; i--) {
                 String[] split = valuesList.get(i).split(",");
                 String arithOp = split[0];
                 String numbers = split[1];
                 String newResult = "";
 
                 // check if last item
-                if (i-1 < 0) {
-                    newResult  = " [<arith-operation> [<numbers> [" + prevNumbers + "]]]"
+                if (i - 1 < 0) {
+                    newResult = " [<arith-operation> [<numbers> [" + prevNumbers + "]]]"
                             + " [<arith-operator> [" + arithOp + "]]"
                             + " [<arith-operation> [<numbers> [" + numbers + "]]]";
                 } else {
@@ -251,46 +235,46 @@ public class SyntaxAnalyzer {
                             + " [<arith-operator> [" + arithOp + "]]"
                             + " [<arith-operation> [<numbers> [" + numbers + "]]]";
                 }
-                
+
                 // check if also first item
                 if (!result.contains("<arith-operation>")) {
                     result = newResult;
                 } else {
                     result = result.replace("[<arith-operation>]", "[<arith-operation> " + newResult + "]");
                 }
-                
+
                 valuesList.remove(i);
             }
-            
+
             parseList.add("[<arith-operation2> " + result.trim() + "]");
         } else if (getCurrentTokenType() == TokenType.POINT) {
             match(TokenType.POINT);
             match(TokenType.NUMBERS);
-            prevNumbers = prevNumbers + "." + tokens.get(currentTokenIndex-1).getValue();
-            
+            prevNumbers = prevNumbers + "." + tokens.get(currentTokenIndex - 1).getValue();
+
             if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
                 do {
                     match(TokenType.ARITH_OPERATOR);
-                    String arithOp = tokens.get(currentTokenIndex-1).getValue();
+                    String arithOp = tokens.get(currentTokenIndex - 1).getValue();
                     match(TokenType.NUMBERS);
-                    String numbers = tokens.get(currentTokenIndex-1).getValue();
+                    String numbers = tokens.get(currentTokenIndex - 1).getValue();
                     match(TokenType.POINT);
                     match(TokenType.NUMBERS);
-                    numbers += "." + tokens.get(currentTokenIndex-1).getValue();
-                    
+                    numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+
                     // store values
                     valuesList.add(arithOp + "," + numbers);
                 } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
-                
-                for (int i = valuesList.size()-1 ; i >= 0 ; i--) {
+
+                for (int i = valuesList.size() - 1; i >= 0; i--) {
                     String[] split = valuesList.get(i).split(",");
                     String arithOp = split[0];
                     String numbers = split[1];
                     String newResult = "";
 
                     // check if last item
-                    if (i-1 < 0) {
-                        newResult  = " [<arith-operation> [<numbers> [" + prevNumbers + "]]]"
+                    if (i - 1 < 0) {
+                        newResult = " [<arith-operation> [<numbers> [" + prevNumbers + "]]]"
                                 + " [<arith-operator> [" + arithOp + "]]"
                                 + " [<arith-operation> [<numbers> [" + numbers + "]]]";
                     } else {
@@ -313,25 +297,25 @@ public class SyntaxAnalyzer {
             }
         } else if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
             match(TokenType.REL_OPERATOR);
-            String relOp = tokens.get(currentTokenIndex-1).getValue();
+            String relOp = tokens.get(currentTokenIndex - 1).getValue();
             String type = "";
             String value = "";
-            
+
             // check if variable or value
-            if (getCurrentTokenType() == TokenType.IDENTIFIER) { 
+            if (getCurrentTokenType() == TokenType.IDENTIFIER) {
                 currentTokenIndex++;
                 type = "<identifier>";
-                value = tokens.get(currentTokenIndex-1).getValue();
+                value = tokens.get(currentTokenIndex - 1).getValue();
             } else if (getCurrentTokenType() == TokenType.NUMBERS) {
                 currentTokenIndex++;
                 type = "<numbers>";
-                value = tokens.get(currentTokenIndex-1).getValue();
+                value = tokens.get(currentTokenIndex - 1).getValue();
             }
-            
+
             result = "[<numbers> [" + prevNumbers + "]]"
                     + " [<rel-operator> [" + relOp + "]]"
-                    + " [" + type + " [" + value + "]]" ;
-            
+                    + " [" + type + " [" + value + "]]";
+
             parseList.add("[<rel-expression> " + result.trim() + "]");
         } else {
             throw new Exception("Unexpected keyword: " + getCurrentToken().getValue());
@@ -488,7 +472,7 @@ public class SyntaxAnalyzer {
         } else if (getCurrentTokenInput().equals("g")) {   // do-while loop
             match(TokenType.KEYWORD);
             match(TokenType.OPENBRACE);
-            
+
             // check if iteration
             int nextTokenIndex = currentTokenIndex + 1;
             if ((getCurrentTokenType() == TokenType.UNARY_OPERATOR
@@ -604,7 +588,7 @@ public class SyntaxAnalyzer {
 
     private void parseConditionNumbers() throws Exception {
         match(TokenType.REL_OPERATOR);
-        if (getCurrentTokenType() == TokenType.IDENTIFIER || getCurrentTokenType() == TokenType.NUMBERS) { 
+        if (getCurrentTokenType() == TokenType.IDENTIFIER || getCurrentTokenType() == TokenType.NUMBERS) {
             currentTokenIndex++;
         }
     }
@@ -764,6 +748,10 @@ public class SyntaxAnalyzer {
             System.out.println(str);
         }
         return str;
+    }
+    
+    private TokenType getTokenInputLutang() {
+        return tokens.get(currentTokenIndex + 2).getType();
     }
 
     private TokenType getCurrentTokenType() {
