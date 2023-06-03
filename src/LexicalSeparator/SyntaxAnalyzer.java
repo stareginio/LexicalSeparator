@@ -28,6 +28,7 @@ public class SyntaxAnalyzer {
     String varName;
     String numVal;
     String strVal;
+    boolean[] condition = {false, false};  // if inside a control structure, if the condition is true
 
     public void analyze(List<Token> tokens) throws Exception {
         this.tokens = tokens;
@@ -94,12 +95,16 @@ public class SyntaxAnalyzer {
                 value = tokens.get(currentTokenIndex).getValue();
             }
             type = tokens.get(currentTokenIndex - 1).getValue();
-
-            // Add symbol to the symbol table
-            if (!symbolTable.containsSymbol(value)) {
-                symbolTable.addSymbol(type, value);
-            } else {
-                throw new Exception("'" + value + "' value already declared.");
+            
+            // Check if inside a control structure with condition = true
+            // or if not inside a control structure
+            if ((condition[0] && condition[1]) || !condition[0]) {
+                // Add symbol to the symbol table
+                if (!symbolTable.containsSymbol(value)) {
+                    symbolTable.addSymbol(type, value);
+                } else {
+                    throw new Exception("'" + value + "' value already declared.");
+                }
             }
             
             // Check if array
@@ -124,9 +129,13 @@ public class SyntaxAnalyzer {
 
                     String val = str;
                     type = "yarn array (" + value + ") value";
-
-                    // Add symbol to the symbol table
-                    symbolTable.addSymbol(type, val);
+                    
+                    // Check if inside a control structure with condition = true
+                    // or if not inside a control structure
+                    if ((condition[0] && condition[1]) || !condition[0]) {
+                        // Add symbol to the symbol table
+                        symbolTable.addSymbol(type, val);
+                    }
 
                     parseList.add("[<yarn-awit-initialization> [yarn[]][<variableName>[" + varName + "]][=][{][<arrYarnValue>" + str + "[}][;]]");
                 }
@@ -156,12 +165,16 @@ public class SyntaxAnalyzer {
                             String store2 = store.replace("\"", "");
                             valuesList.clear();
                             valuesList.add(store2);
-
-                            if (symbolTable.containsSymbol(type2)) {
-                                symbolTable.removeSymbol(type2);
-                                symbolTable.addSymbol(type2, store2);
-                            } else {
-                                symbolTable.addSymbol(type2, store2);
+                            
+                            // Check if inside a control structure with condition = true
+                            // or if not inside a control structure
+                            if ((condition[0] && condition[1]) || !condition[0]) {
+                                if (symbolTable.containsSymbol(type2)) {
+                                    symbolTable.removeSymbol(type2);
+                                    symbolTable.addSymbol(type2, store2);
+                                } else {
+                                    symbolTable.addSymbol(type2, store2);
+                                }
                             }
 
                         } while (getCurrentTokenInput().equals("lahamz"));
@@ -172,9 +185,14 @@ public class SyntaxAnalyzer {
                     } else if (getCurrentTokenInput().equals(";")) {
                         String val = tokens.get(currentTokenIndex - 1).getValue();
                         type = "yarn (" + value + ") value";
-
-                        // Add symbol to the symbol table
-                        symbolTable.addSymbol(type, val);
+                        
+                        // Check if inside a control structure with condition = true
+                        // or if not inside a control structure
+                        if ((condition[0] && condition[1]) || !condition[0]) {
+                            // Add symbol to the symbol table
+                            symbolTable.addSymbol(type, val);
+                        }
+                        
                         parseList.add("[<yarn-initialization> [yarn][<variableName>[" + varName + "]][=][<string-literal>[" + strVal + "]][;]]");
                     }
                 } else if (getCurrentTokenInput().equals(";")) {
@@ -193,12 +211,16 @@ public class SyntaxAnalyzer {
                 value = tokens.get(currentTokenIndex).getValue();
             }
             type = tokens.get(currentTokenIndex - 1).getValue();
-
-            // Add symbol to the symbol table
-            if (!symbolTable.containsSymbol(value)) {
-                symbolTable.addSymbol(type, value);
-            } else {
-                throw new Exception("'" + value + "' value already declared.");
+            
+            // Check if inside a control structure with condition = true
+            // or if not inside a control structure
+            if ((condition[0] && condition[1]) || !condition[0]) {
+                // Add symbol to the symbol table
+                if (!symbolTable.containsSymbol(value)) {
+                    symbolTable.addSymbol(type, value);
+                } else {
+                    throw new Exception("'" + value + "' value already declared.");
+                }
             }
 
             if (getCurrentTokenType() == TokenType.OPENBRACKET) {
@@ -222,9 +244,13 @@ public class SyntaxAnalyzer {
 
                     String val = str;
                     type = "digits array (" + value + ") value";
-
-                    // Add symbol to the symbol table
-                    symbolTable.addSymbol(type, val);
+                    
+                    // Check if inside a control structure with condition = true
+                    // or if not inside a control structure
+                    if ((condition[0] && condition[1]) || !condition[0]) {
+                        // Add symbol to the symbol table
+                        symbolTable.addSymbol(type, val);
+                    }
 
                     parseList.add("[<digits-awit-initialization> [digits[]][<variableName>[" + varName + "]][=][{][<arrDigitsValue>" + str + "[}][;]]");
                 }
@@ -241,9 +267,14 @@ public class SyntaxAnalyzer {
                     } else if (getCurrentTokenInput().equals(";")) {
                         String val = tokens.get(currentTokenIndex - 1).getValue();
                         type = "digits (" + value + ") value";
-
-                        // Add symbol to the symbol table
-                        symbolTable.addSymbol(type, val);
+                        
+                        // Check if inside a control structure with condition = true
+                        // or if not inside a control structure
+                        if ((condition[0] && condition[1]) || !condition[0]) {
+                            // Add symbol to the symbol table
+                            symbolTable.addSymbol(type, val);
+                        }
+                        
                         parseList.add("[<digits-initialization> [digits][<variableName>[" + varName + "]][=][<numbers>[" + numVal + "]][;]]");
                     }
                 } else if (getCurrentTokenInput().equals(";")) {
@@ -262,12 +293,16 @@ public class SyntaxAnalyzer {
                 value = tokens.get(currentTokenIndex).getValue();
             }
             type = tokens.get(currentTokenIndex - 1).getValue();
-
-            // Add symbol to the symbol table
-            if (!symbolTable.containsSymbol(value)) {
-                symbolTable.addSymbol(type, value);
-            } else {
-                throw new Exception("'" + value + "' value already declared.");
+            
+            // Check if inside a control structure with condition = true
+            // or if not inside a control structure
+            if ((condition[0] && condition[1]) || !condition[0]) {
+                // Add symbol to the symbol table
+                if (!symbolTable.containsSymbol(value)) {
+                    symbolTable.addSymbol(type, value);
+                } else {
+                    throw new Exception("'" + value + "' value already declared.");
+                }
             }
 
             if (getCurrentTokenType() == TokenType.OPENBRACKET) {
@@ -299,9 +334,13 @@ public class SyntaxAnalyzer {
 
                     String val = str;
                     type = "lutang array (" + value + ") value";
-
-                    // Add symbol to the symbol table
-                    symbolTable.addSymbol(type, val);
+                    
+                    // Check if inside a control structure with condition = true
+                    // or if not inside a control structure
+                    if ((condition[0] && condition[1]) || !condition[0]) {
+                        // Add symbol to the symbol table
+                        symbolTable.addSymbol(type, val);
+                    }                    
 
                     parseList.add("[<lutang_awit_initialization> [digits[]][<variableName>[" + varName
                             + "]][=][{][<arrLutangValue>" + str + "[}][;]]");
@@ -335,9 +374,14 @@ public class SyntaxAnalyzer {
                             
                             String val = numbers;
                             type = "lutang (" + value + ") value";
-
-                            // Add symbol to the symbol table
-                            symbolTable.addSymbol(type, val);
+                            
+                            // Check if inside a control structure with condition = true
+                            // or if not inside a control structure
+                            if ((condition[0] && condition[1]) || !condition[0]) {
+                                // Add symbol to the symbol table
+                                symbolTable.addSymbol(type, val);
+                            }
+                            
                             parseList.add("[<lutang_initialization> [lutang][<variableName>[" + varName + "]][=][<numbers>["
                                     + numbers + "]][;]]");
                         }   
@@ -351,17 +395,47 @@ public class SyntaxAnalyzer {
 
     private void parseArithOp(String value) throws Exception {
         String prevNumbers = tokens.get(currentTokenIndex - 1).getValue();
+        TokenType prevTokenType = tokens.get(currentTokenIndex - 1).getType();
+        
         ArrayList<Object> valuesList = new ArrayList();
         String result = "";
         
         Map.Entry<String,String> firstItem = symbolTable.getSymbols().entrySet().iterator().next();
         String datatype = firstItem.getKey();
         
-        // Check if not followed by a decimal point (int instead of float)
+        // Check if not followed by a decimal point (int or identifier)
         if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
-            
-            // add the integer in valuesList
-            valuesList.add(Integer.parseInt(prevNumbers));
+            // Check if int or identifier
+            if (prevTokenType == TokenType.NUMBERS) {
+                // add the integer in valuesList
+                valuesList.add(Integer.parseInt(prevNumbers));
+            } else if (prevTokenType == TokenType.IDENTIFIER) {
+                value = tokens.get(currentTokenIndex-1).getValue();
+                String numbers = "";
+                
+                // Retrieve the value of the identifier from the symbolTable
+                for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+                    if (entry.getKey().contains("(" + value + ")")) {
+                        numbers = entry.getValue();
+                        datatype = entry.getKey().substring(0, entry.getKey().indexOf(" "));
+                        break;
+                    }
+                }
+                
+                // Throw error if id is not in the symbolTable (if idValue is null)
+                if (numbers.equals("")) {
+                    throw new Exception("'" + value + "' variable not declared.");
+                }
+                
+                // Check if int or float
+                if (datatype.equals("digits")) {
+                    // add the integer value in valuesList
+                    valuesList.add(Integer.parseInt(numbers));
+                } else if (datatype.equals("lutang")) {
+                    // add the float value in valuesList
+                    valuesList.add(Float.parseFloat(numbers));
+                }
+            }
             
             do {
                 if (datatype.equals("digits")) {
@@ -369,72 +443,53 @@ public class SyntaxAnalyzer {
                     String arithOp = tokens.get(currentTokenIndex - 1).getValue();
                     match(TokenType.NUMBERS);
                     int numbers = Integer.parseInt(tokens.get(currentTokenIndex - 1).getValue());
+                    String type = "", store = "";
                     
                     // compute
                     if (arithOp.equals("lahamz")) {
                         valuesList.add(numbers);
-                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
-                        String type = "digits (" + value + ") operations result";
-
-                        if (symbolTable.containsSymbol(type)) {
-                            symbolTable.removeSymbol(type);
-                            symbolTable.addSymbol(type, store);
-                        } else {
-                            symbolTable.addSymbol(type, store);
-                        }
+                        type = "digits (" + value + ") operations result";
+                        
                     } else if (arithOp.equals("ghosted")) {
                         valuesList.add(numbers);
-                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
-                        String type = "digits (" + value + ") operations result";
-
-                        if (symbolTable.containsSymbol(type)) {
-                            symbolTable.removeSymbol(type);
-                            symbolTable.addSymbol(type, store);
-                        } else {
-                            symbolTable.addSymbol(type, store);
-                        }
+                        type = "digits (" + value + ") operations result";
+                        
                     } else if (arithOp.equals("cheater")) {
                         valuesList.add(numbers);
-                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
-                        String type = "digits (" + value + ") operations result";
+                        type = "digits (" + value + ") operations result";
 
-                        if (symbolTable.containsSymbol(type)) {
-                            symbolTable.removeSymbol(type);
-                            symbolTable.addSymbol(type, store);
-                        } else {
-                            symbolTable.addSymbol(type, store);
-                        }
                     } else if (arithOp.equals("chariz")) {
                         valuesList.add(numbers);
-                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
-                        String type = "digits (" + value + ") operations result";
+                        type = "digits (" + value + ") operations result";
 
-                        if (symbolTable.containsSymbol(type)) {
-                            symbolTable.removeSymbol(type);
-                            symbolTable.addSymbol(type, store);
-                        } else {
-                            symbolTable.addSymbol(type, store);
-                        } 
                     } else if (arithOp.equals("dasurv")) {
                         valuesList.add(numbers);
-                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
-                        String type = "digits (" + value + ") operations result";
-
+                        type = "digits (" + value + ") operations result";
+                    }
+                    
+                    // Check if inside a control structure with condition = true
+                    // or if not inside a control structure
+                    if ((condition[0] && condition[1]) || !condition[0]) {
                         if (symbolTable.containsSymbol(type)) {
                             symbolTable.removeSymbol(type);
                             symbolTable.addSymbol(type, store);
@@ -450,18 +505,6 @@ public class SyntaxAnalyzer {
                     String numbers = tokens.get(currentTokenIndex - 1).getValue();
                     float numbersFloat = 0;
                     
-                    // For debugging
-//                    System.out.println("\nSymbol Table:");
-//                    System.out.println("-------------");
-//                    for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
-//                        String symbolName = entry.getKey();
-//                        String symbolInfo = entry.getValue();
-//
-//                        System.out.println("Value: " + symbolInfo);
-//                        System.out.println("Type: " + symbolName);
-//                        System.out.println("--------------------");
-//                    }
-                    
                     // Check if followed by a decimal point (float instead of int)
                     if ((tokens.get(currentTokenIndex).getType()).equals(TokenType.POINT)) {
                         match(TokenType.POINT);
@@ -469,7 +512,6 @@ public class SyntaxAnalyzer {
                         numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
                         
                         // Convert to float
-//                        System.out.println("numbersFloat: " + numbersFloat);
                         numbersFloat = Float.parseFloat(numbers);
                         
                         // For debugging
@@ -527,13 +569,18 @@ public class SyntaxAnalyzer {
                         valuesList.add(Float.parseFloat(store));
 
                         String type = "lutang (" + value + ") operations result";
-
-                        if (symbolTable.containsSymbol(type)) {
-                            symbolTable.removeSymbol(type);
-                            symbolTable.addSymbol(type, store);
-                        } else {
-                            symbolTable.addSymbol(type, store);
+                        
+                        // Check if inside a control structure with condition = true
+                        // or if not inside a control structure
+                        if ((condition[0] && condition[1]) || !condition[0]) {
+                            if (symbolTable.containsSymbol(type)) {
+                                symbolTable.removeSymbol(type);
+                                symbolTable.addSymbol(type, store);
+                            } else {
+                                symbolTable.addSymbol(type, store);
+                            }
                         }
+                        
                     } else if (arithOp.equals("dasurv")) {
                         throw new Exception("Float value found in modulo operation");
                     }
@@ -569,7 +616,9 @@ public class SyntaxAnalyzer {
             }
 
             parseList.add("[<arith-operation2> " + result.trim() + "]");
-        } else if (getCurrentTokenType() == TokenType.POINT) {
+            
+        } else if (getCurrentTokenType()
+                == TokenType.POINT) {      // Check if float
             match(TokenType.POINT);
             match(TokenType.NUMBERS);
             prevNumbers += "." + tokens.get(currentTokenIndex - 1).getValue();
@@ -578,45 +627,55 @@ public class SyntaxAnalyzer {
             valuesList.add(Float.parseFloat(prevNumbers));
             
             if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
-                do {                    
-                    // For debugging
-//                    System.out.println("\nSymbol Table:");
-//                    System.out.println("-------------");
-//                    for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
-//                        String symbolName = entry.getKey();
-//                        String symbolInfo = entry.getValue();
-//
-//                        System.out.println("Value: " + symbolInfo);
-//                        System.out.println("Type: " + symbolName);
-//                        System.out.println("--------------------");
-//                    }
+                do {
+                    float numbersFloat = 0;
                     
                     match(TokenType.ARITH_OPERATOR);
                     String arithOp = tokens.get(currentTokenIndex - 1).getValue();
-                    match(TokenType.NUMBERS);
-                    String numbers = tokens.get(currentTokenIndex - 1).getValue();
-                    float numbersFloat;
-                                        
-                    // Check if followed by a decimal point (float instead of int)
-                    if (currentTokenIndex+1 < tokens.size()
-                            && (tokens.get(currentTokenIndex+1).getType()).equals(TokenType.POINT)) {
-                        match(TokenType.POINT);
+                    
+                    // Check if identifier
+                    if (tokens.get(currentTokenIndex).getType() == TokenType.IDENTIFIER) {
+                        value = getCurrentTokenInput();
+                        match(TokenType.IDENTIFIER);
+                        String numbers = "";
+                        
+                        // Retrieve the value of the identifier from the symbolTable
+                        for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+                            if (entry.getKey().contains("(" + value + ")")) {
+                                numbers = entry.getValue();
+                                datatype = entry.getKey().substring(0, entry.getKey().indexOf(" "));
+                                break;
+                            }
+                        }
+                        
+                        // Throw error if id is not in the symbolTable (if idValue is null)
+                        if (numbers.equals("")) {
+                            throw new Exception("'" + value + "' variable not declared.");
+                        }
+
+                        // Convert to float
+                        numbersFloat = Float.parseFloat(numbers);
+                        
+                    } else if (tokens.get(currentTokenIndex).getType()
+                            == TokenType.NUMBERS) {     // Check if int or float
                         match(TokenType.NUMBERS);
-                        numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+                        String numbers = tokens.get(currentTokenIndex - 1).getValue();
                         
-                        // Convert to float
-                        numbersFloat = Float.parseFloat(numbers);
-                        
-                        // For debugging
-//                        System.out.println("tokens.get(currentTokenIndex-3).getValue(): " + tokens.get(currentTokenIndex-3).getValue());
-//                        System.out.println("tokens.get(currentTokenIndex-2).getValue(): " + tokens.get(currentTokenIndex-2).getValue());
-//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
-                    } else {
-                        // Convert to float
-                        numbersFloat = Float.parseFloat(numbers);
-                        
-                        // For debugging
-//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
+                        // Check if float
+                        if (currentTokenIndex+1 < tokens.size()
+                                && (tokens.get(currentTokenIndex+1).getType()).equals(TokenType.POINT)) {
+                            match(TokenType.POINT);
+                            match(TokenType.NUMBERS);
+                            numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+
+                            // Convert to float
+                            numbersFloat = Float.parseFloat(numbers);
+                            
+                        } else {
+                            // Convert to float
+                            numbersFloat = Float.parseFloat(numbers);
+                            
+                        }
                     }
                     
                     // Compute
@@ -629,7 +688,6 @@ public class SyntaxAnalyzer {
                             store = Float.toString((Float) valuesList.get(0) + (Float) valuesList.get(1));
                         } else if (arithOp.equals("ghosted")) {
                             store = Float.toString((Float) valuesList.get(0) - (Float) valuesList.get(1));
-                            System.out.println("store: " + store);
                         } else if (arithOp.equals("cheater")) {
                             store = Float.toString((Float) valuesList.get(0) * (Float) valuesList.get(1));
                         } else if (arithOp.equals("chariz")) {
@@ -641,11 +699,15 @@ public class SyntaxAnalyzer {
 
                         String type = "lutang (" + value + ") operations result";
                         
-                        if (symbolTable.containsSymbol(type)) {
-                            symbolTable.removeSymbol(type);
-                            symbolTable.addSymbol(type, store);
-                        } else {
-                            symbolTable.addSymbol(type, store);
+                        // Check if inside a control structure with condition = true
+                        // or if not inside a control structure
+                        if ((condition[0] && condition[1]) || !condition[0]) {
+                            if (symbolTable.containsSymbol(type)) {
+                                symbolTable.removeSymbol(type);
+                                symbolTable.addSymbol(type, store);
+                            } else {
+                                symbolTable.addSymbol(type, store);
+                            }
                         }
                         
                     } else if (arithOp.equals("dasurv")) {
@@ -755,23 +817,192 @@ public class SyntaxAnalyzer {
     }
 
     private void checkRelorLog() throws Exception {
-
+        
         if (getCurrentTokenType() == TokenType.NUMBERS) {
+            String prevNumbers = tokens.get(currentTokenIndex).getValue();
             match(TokenType.NUMBERS);
-            parseConditionNumbers();
+            
+            // Check if float
+            if (getCurrentTokenType() == TokenType.POINT) {
+                prevNumbers = tokens.get(currentTokenIndex - 1).getValue();
+                match(TokenType.POINT);
+                match(TokenType.NUMBERS);
+                prevNumbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+            }
+            
+            String relOp = tokens.get(currentTokenIndex).getValue();
+            match(TokenType.REL_OPERATOR);
+            
+            // Check if the right operand is an identifier or a numerical value
+            TokenType tokenType = getCurrentTokenType();
+            if (tokenType == TokenType.IDENTIFIER || tokenType == TokenType.NUMBERS) {                
+                // Check if identifier
+                if (tokenType == TokenType.IDENTIFIER) {
+                    String id = tokens.get(currentTokenIndex).getValue();
+                    String value = "";
+                    currentTokenIndex++;
+                    
+                    // Retrieve the value of the identifier from the symbolTable
+                    for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+                        if (entry.getKey().contains("(" + id + ")")) {
+                            value = entry.getValue();
+                            break;
+                        }
+                    }
+                        
+                    // compute
+                    if (relOp.equals("samedt")
+                            && Float.parseFloat(prevNumbers) == Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("diff")
+                            && Float.parseFloat(prevNumbers) != Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("W")
+                            && Float.parseFloat(prevNumbers) > Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("L")
+                            && Float.parseFloat(prevNumbers) < Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("W samedt")
+                            && Float.parseFloat(prevNumbers) >= Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("L samedt")
+                            && Float.parseFloat(prevNumbers) <= Float.parseFloat(value)) {
+                        condition[1] = true;
+                    }
+                    
+                } else {    // numerical value
+                    String value = tokens.get(currentTokenIndex).getValue();
+                    match(TokenType.NUMBERS);
+                    
+                    // Check if float
+                    if (getCurrentTokenType() == TokenType.POINT) {
+                        match(TokenType.POINT);
+                        match(TokenType.NUMBERS);
+                        value += "." + tokens.get(currentTokenIndex - 1).getValue();
+                    }
+                    
+                    // compute
+                    if (relOp.equals("samedt")
+                            && Float.parseFloat(prevNumbers) == Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("diff")
+                            && Float.parseFloat(prevNumbers) != Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("W")
+                            && Float.parseFloat(prevNumbers) > Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("L")
+                            && Float.parseFloat(prevNumbers) < Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("W samedt")
+                            && Float.parseFloat(prevNumbers) >= Float.parseFloat(value)) {
+                        condition[1] = true;
+                    } else if (relOp.equals("L samedt")
+                            && Float.parseFloat(prevNumbers) <= Float.parseFloat(value)) {
+                        condition[1] = true;
+                    }
+                }
+            }
+            
             if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
                 parseLogicalOp();
             }
         } else if (getCurrentTokenType() == TokenType.IDENTIFIER) {
+            String leftId = tokens.get(currentTokenIndex).getValue();
+            String prevNumbers = "";
             match(TokenType.IDENTIFIER);
+            
+            // Retrieve the value of the identifier from the symbolTable
+            for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+                if (entry.getKey().contains("(" + leftId + ")")) {
+                    prevNumbers = entry.getValue();
+                    break;
+                }
+            }
+            
             if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
-                parseConditionNumbers();
+                String relOp = tokens.get(currentTokenIndex).getValue();
+                match(TokenType.REL_OPERATOR);
+                
+                // Check if the right operand is an identifier or a numerical value
+                TokenType tokenType = getCurrentTokenType();
+                if (tokenType == TokenType.IDENTIFIER || tokenType == TokenType.NUMBERS) {                
+                    // Check if identifier
+                    if (tokenType == TokenType.IDENTIFIER) {
+                        String rightId = tokens.get(currentTokenIndex).getValue();
+                        String value = "";
+                        currentTokenIndex++;
+
+                        // Retrieve the value of the identifier from the symbolTable
+                        for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+                            if (entry.getKey().contains("(" + rightId + ")")) {
+                                value = entry.getValue();
+                                break;
+                            }
+                        }
+                        
+                        // compute
+                        if (relOp.equals("samedt")
+                                && Float.parseFloat(prevNumbers) == Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("diff")
+                                && Float.parseFloat(prevNumbers) != Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("W")
+                                && Float.parseFloat(prevNumbers) > Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("L")
+                                && Float.parseFloat(prevNumbers) < Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("W samedt")
+                                && Float.parseFloat(prevNumbers) >= Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("L samedt")
+                                && Float.parseFloat(prevNumbers) <= Float.parseFloat(value)) {
+                            condition[1] = true;
+                        }
+                    } else {    // numerical value
+                        String value = tokens.get(currentTokenIndex).getValue();
+                        match(TokenType.NUMBERS);
+                    
+                        // Check if float
+                        if (getCurrentTokenType() == TokenType.POINT) {
+                            match(TokenType.POINT);
+                            match(TokenType.NUMBERS);
+                            value += "." + tokens.get(currentTokenIndex - 1).getValue();
+                        }
+                        
+                        // compute
+                        if (relOp.equals("samedt")
+                                && Float.parseFloat(prevNumbers) == Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("diff")
+                                && Float.parseFloat(prevNumbers) != Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("W")
+                                && Float.parseFloat(prevNumbers) > Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("L")
+                                && Float.parseFloat(prevNumbers) < Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("W samedt")
+                                && Float.parseFloat(prevNumbers) >= Float.parseFloat(value)) {
+                            condition[1] = true;
+                        } else if (relOp.equals("L samedt")
+                                && Float.parseFloat(prevNumbers) <= Float.parseFloat(value)) {
+                            condition[1] = true;
+                        }
+                    }
+                }
+                
                 if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
                     Token currentToken = getCurrentToken();
                     if (currentToken.getValue().equals("naol") || currentToken.getValue().equals("edewups")) {
                         parseLogicalOp();
                     }
                 }
+                
             } else if (getCurrentTokenType() == TokenType.LOGIC_OPERATOR) {
                 parseLogicalOp();
             }
@@ -801,23 +1032,27 @@ public class SyntaxAnalyzer {
             match(TokenType.ASSIGNMENT_OPERATOR);
             parseExpression();
         }
-
+        
+        // For debugging
+//        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
+//        System.out.println("tokens.get(currentTokenIndex).getValue(): " + tokens.get(currentTokenIndex).getValue());
+        
         if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
-            do {
-                match(TokenType.ARITH_OPERATOR);
-                if (getCurrentTokenType() == TokenType.IDENTIFIER) {    // check if variable
-                    parseVariableName();
-                } else if (getCurrentTokenType() == TokenType.NUMBERS) {  // check if value
-                    match(TokenType.NUMBERS);
-                }
-            } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
+            parseArithOp("");
         }
 
         if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
             match(TokenType.REL_OPERATOR);
             if (getCurrentTokenType() == TokenType.IDENTIFIER
                     || getCurrentTokenType() == TokenType.NUMBERS) { // check if variable or value
+                TokenType prevTokenType = tokens.get(currentTokenIndex-1).getType();
                 currentTokenIndex++;
+                
+                // Check if float
+                if (prevTokenType == TokenType.NUMBERS && getCurrentTokenType() == TokenType.POINT) {
+                    match(TokenType.POINT);
+                    match(TokenType.NUMBERS);
+                }
             }
         }
     }
@@ -827,33 +1062,50 @@ public class SyntaxAnalyzer {
     }
 
     private void parseKeyword() throws Exception {
-        if (getCurrentTokenInput().equals("tbh")) {    //if / if-else chain / if-else statement
-//            ArrayList<String> conditionList = new ArrayList<String>();
-//            ArrayList<String> statementListIf = new ArrayList<String>();
-//            ArrayList<String> statementListElseIf = new ArrayList<String>();
-//            ArrayList<String> statementListElse = new ArrayList<String>();
-//            ArrayList<Integer> elseIfStatementCtr = new ArrayList<Integer>();
+        if (getCurrentTokenInput().equals("tbh")) {    // if / if-else chain / if-else statement
+            String leftOperand = "";
+            String rightOperand = "";
             
             match(TokenType.KEYWORD);
             match(TokenType.OPENPARENTHESIS);
+            // Check if the left operand is a variable
+            if (getCurrentToken().getType().equals(TokenType.IDENTIFIER)) {
+                leftOperand = getCurrentToken().getValue();
+            }
             checkRelorLog();
+            // Check if the right operand is a variable
+            if (tokens.get(currentTokenIndex-1).getType().equals(TokenType.IDENTIFIER)) {
+                rightOperand = tokens.get(currentTokenIndex-1).getValue();
+            }
             match(TokenType.CLOSEPARENTHESIS);
             
-            // transfer the parsed rel or log statement from parseList to conditionList for later
-//            conditionList.add(parseList.get(parseList.size()-1));
-//            parseList.remove(parseList.size()-1);
+            // For debugging
+//            System.out.println("leftOperand: " + leftOperand);
+//            System.out.println("rightOperand: " + rightOperand);
+            
+            // Check if any variable inside the condition has NOT been declared
+            if (!leftOperand.equals("") || !rightOperand.equals("")) {
+                if (!leftOperand.equals("") && !symbolTable.containsSymbol(leftOperand)) {
+                    throw new Exception("variable " + leftOperand + " has not been declared before the control structure");
+                } else if (!rightOperand.equals("") && !symbolTable.containsSymbol(rightOperand)) {
+                    throw new Exception("variable " + rightOperand + " has not been declared before the control structure");
+                }
+            }
             
             match(TokenType.OPENBRACE);
+            
+            // Check if the condition of the if-statement is true
+            condition[0] = true;
             while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
                 parseStatement();
-                
-                // transfer the parsed statement from parseList to statementListIf for later
-//                statementListIf.add(parseList.get(parseList.size()-1));
-//                parseList.remove(parseList.size()-1);
             }
+            
+            condition[0] = false;
+            condition[1] = false;
+            
             match(TokenType.CLOSEBRACE);
-
-            // check for "else if" statement/s
+            
+            // check for else-if statement/s
             if (currentTokenIndex < tokens.size()) {
                 while (getCurrentTokenInput().equals("nvm tbh")) {
                     match(TokenType.KEYWORD);
@@ -862,100 +1114,23 @@ public class SyntaxAnalyzer {
                     checkRelorLog();
                     match(TokenType.CLOSEPARENTHESIS);
                     
-                    // transfer the parsed rel or log statement from parseList to conditionList for later
-//                    conditionList.add(parseList.get(parseList.size()-1));
-//                    parseList.remove(parseList.size()-1);
-                    
-//                    int ctr = 0;
                     match(TokenType.OPENBRACE);
                     while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
                         parseStatement();
-                        
-                        // transfer the parsed statement from parseList to statementListElseIf for later
-//                        statementListElseIf.add(parseList.get(parseList.size()-1));
-//                        parseList.remove(parseList.size()-1);
-                        
-//                        ctr++;
                     }
                     match(TokenType.CLOSEBRACE);
-                    
-//                    elseIfStatementCtr.add(ctr);
                 }
 
                 // check for "else" statement
-                if (getCurrentTokenInput().equals("nvm")) { // if-else statement
+                if (getCurrentTokenInput().equals("nvm")) { // else statement
                     match(TokenType.KEYWORD);
                     
                     match(TokenType.OPENBRACE);
                     while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
                         parseStatement();   // statement/s
-                        
-                        // transfer the parsed statement from parseList to statementListElse for later
-//                        statementListElse.add(parseList.get(parseList.size()-1));
-//                        parseList.remove(parseList.size()-1);
                     }
                     match(TokenType.CLOSEBRACE);
-                    
-//                    // if
-//                    String parseStr = "[<if-else-statement> [tbh] [(] [<condition> " + conditionList.get(0) + "] [)] [{] ";
-//                    for (int i=0; i < statementListIf.size(); i++) {
-//                        parseStr += "[<statement> " + statementListIf.get(i) + "]";
-//                    }
-//                    parseStr += " [}]";
-//                    
-//                    // else-if's
-//                    int conditionCtr = 1;
-//                    while (!elseIfStatementCtr.isEmpty()) {
-//                        parseStr += "[nvm-tbh] [(] [<condition> " + conditionList.get(conditionCtr) + "]";
-//                        for (int i=0; i < statementListElseIf.size(); i++) {
-//                            parseStr += " [<statement> " + statementListElseIf.get(i) + "] ";
-//                        }
-//                        parseStr += "[}] ";
-//                        
-//                        conditionCtr++;
-//                        elseIfStatementCtr.remove(0);
-//                    }
-//                    
-//                    // else
-//                    parseStr += "[nvm] [{] ";
-//                    for (int i=0; i < statementListElse.size(); i++) {
-//                        parseStr += "[<statement> " + statementListElse.get(i) + "]";
-//                    }
-//                    
-//                    parseStr += " ]";
-//                    parseList.add(parseStr);
-                } else {    // if-else chain
-                    // if
-//                    String parseStr = "[<if-else-statement> [tbh] [(] [<condition> " + conditionList.get(0) + "] [)] [{] ";
-//                    for (int i=0; i < statementListIf.size(); i++) {
-//                        parseStr += "[<statement> " + statementListIf.get(i) + "]";
-//                    }
-//                    parseStr += " [}]";
-//                    
-//                    // else-if's
-//                    int conditionCtr = 1;
-//                    while (!elseIfStatementCtr.isEmpty()) {
-//                        parseStr += "[nvm-tbh] [(] [<condition> " + conditionList.get(conditionCtr) + "]";
-//                        for (int i=0; i < statementListElseIf.size(); i++) {
-//                            parseStr += " [<statement> " + statementListElseIf.get(i) + "] ";
-//                        }
-//                        parseStr += "[}] ";
-//                        
-//                        conditionCtr++;
-//                        elseIfStatementCtr.remove(0);
-//                    }
-//                    
-//                    parseStr += " ]";
-//                    parseList.add(parseStr);
                 }
-            } else {    // if statement
-//                String parseStr = "[<if-statement> [tbh] [(] [<condition> " + conditionList.get(0) + "] [)] [{] ";
-//                for (int i=0; i < statementListIf.size(); i++) {
-//                    parseStr += "[<statement> " + statementListIf.get(i) + "]";
-//                }
-//                
-//                parseStr += " [}]]";
-//                parseList.add(parseStr);
             }
         } else if (getCurrentTokenInput().equals("nvm tbh") || getCurrentTokenInput().equals("nvm")) {
             throw new Exception("Keyword " + getCurrentTokenType() + " found without a previous 'tbh' statement");
@@ -1066,6 +1241,18 @@ public class SyntaxAnalyzer {
 
         if (currentTokenType == TokenType.NUMBERS) {
             match(TokenType.NUMBERS);
+            
+            // Check if float
+            if (getCurrentTokenType() == TokenType.POINT) {
+                match(TokenType.POINT);
+                match(TokenType.NUMBERS);
+            }
+            
+            // Check if arith op
+            if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+                currentTokenIndex -= 2;
+                parseArithOp("");
+            }
         } else if (currentTokenType == TokenType.IDENTIFIER) {
             match(TokenType.IDENTIFIER);
         } else {
