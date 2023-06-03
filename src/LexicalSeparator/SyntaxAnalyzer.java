@@ -370,18 +370,6 @@ public class SyntaxAnalyzer {
                     match(TokenType.NUMBERS);
                     int numbers = Integer.parseInt(tokens.get(currentTokenIndex - 1).getValue());
                     
-                    // For debugging
-//                    System.out.println("\nSymbol Table:");
-//                    System.out.println("-------------");
-//                    for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
-//                        String symbolName = entry.getKey();
-//                        String symbolInfo = entry.getValue();
-//
-//                        System.out.println("Value: " + symbolInfo);
-//                        System.out.println("Type: " + symbolName);
-//                        System.out.println("--------------------");
-//                    }
-                    
                     // compute
                     if (arithOp.equals("lahamz")) {
                         valuesList.add(numbers);
@@ -462,6 +450,18 @@ public class SyntaxAnalyzer {
                     String numbers = tokens.get(currentTokenIndex - 1).getValue();
                     float numbersFloat = 0;
                     
+                    // For debugging
+//                    System.out.println("\nSymbol Table:");
+//                    System.out.println("-------------");
+//                    for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+//                        String symbolName = entry.getKey();
+//                        String symbolInfo = entry.getValue();
+//
+//                        System.out.println("Value: " + symbolInfo);
+//                        System.out.println("Type: " + symbolName);
+//                        System.out.println("--------------------");
+//                    }
+                    
                     // Check if followed by a decimal point (float instead of int)
                     if ((tokens.get(currentTokenIndex).getType()).equals(TokenType.POINT)) {
                         match(TokenType.POINT);
@@ -469,6 +469,7 @@ public class SyntaxAnalyzer {
                         numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
                         
                         // Convert to float
+//                        System.out.println("numbersFloat: " + numbersFloat);
                         numbersFloat = Float.parseFloat(numbers);
                         
                         // For debugging
@@ -525,7 +526,7 @@ public class SyntaxAnalyzer {
                         valuesList.clear();
                         valuesList.add(Float.parseFloat(store));
 
-                        String type = "digits (" + value + ") operations result";
+                        String type = "lutang (" + value + ") operations result";
 
                         if (symbolTable.containsSymbol(type)) {
                             symbolTable.removeSymbol(type);
@@ -639,7 +640,7 @@ public class SyntaxAnalyzer {
                         valuesList.add(Float.parseFloat(store));
 
                         String type = "lutang (" + value + ") operations result";
-
+                        
                         if (symbolTable.containsSymbol(type)) {
                             symbolTable.removeSymbol(type);
                             symbolTable.addSymbol(type, store);
