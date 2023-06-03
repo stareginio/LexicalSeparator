@@ -28,7 +28,8 @@ public class SyntaxAnalyzer {
     String varName;
     String numVal;
     String strVal;
-    boolean[] condition = {false, false};  // if inside a control structure, if the condition is true
+    boolean[] condition = {false, false, false}; 
+        // if inside a control structure, if the condition is true, if already executed if/else-if/else
 
     public void analyze(List<Token> tokens) throws Exception {
         this.tokens = tokens;
@@ -97,8 +98,10 @@ public class SyntaxAnalyzer {
             type = tokens.get(currentTokenIndex - 1).getValue();
             
             // Check if inside a control structure with condition = true
+            // and if a previous if/else-if has not been executed yet
             // or if not inside a control structure
-            if ((condition[0] && condition[1]) || !condition[0]) {
+            if ((condition[0] && condition[1] && !condition[2])
+                    || !condition[0]) {
                 // Add symbol to the symbol table
                 if (!symbolTable.containsSymbol(value)) {
                     symbolTable.addSymbol(type, value);
@@ -131,8 +134,10 @@ public class SyntaxAnalyzer {
                     type = "yarn array (" + value + ") value";
                     
                     // Check if inside a control structure with condition = true
+                    // and if a previous if/else-if has not been executed yet
                     // or if not inside a control structure
-                    if ((condition[0] && condition[1]) || !condition[0]) {
+                    if ((condition[0] && condition[1] && !condition[2])
+                            || !condition[0]) {
                         // Add symbol to the symbol table
                         symbolTable.addSymbol(type, val);
                     }
@@ -157,7 +162,7 @@ public class SyntaxAnalyzer {
                             match(TokenType.ARITH_OPERATOR);
                             tempListYarn.add(getCurrentTokenInput());
                             match(TokenType.STRING_LITERAL);
-                            System.out.println(getCurrentTokenType());
+//                            System.out.println(getCurrentTokenType());
 
                             valuesList.add(tokens.get(currentTokenIndex - 1).getValue());
                             String type2 = "yarn (" + value + ") operations result";
@@ -167,8 +172,10 @@ public class SyntaxAnalyzer {
                             valuesList.add(store2);
                             
                             // Check if inside a control structure with condition = true
+                            // and if a previous if/else-if has not been executed yet
                             // or if not inside a control structure
-                            if ((condition[0] && condition[1]) || !condition[0]) {
+                            if ((condition[0] && condition[1] && !condition[2])
+                                    || !condition[0]) {
                                 if (symbolTable.containsSymbol(type2)) {
                                     symbolTable.removeSymbol(type2);
                                     symbolTable.addSymbol(type2, store2);
@@ -187,8 +194,10 @@ public class SyntaxAnalyzer {
                         type = "yarn (" + value + ") value";
                         
                         // Check if inside a control structure with condition = true
+                        // and if a previous if/else-if has not been executed yet
                         // or if not inside a control structure
-                        if ((condition[0] && condition[1]) || !condition[0]) {
+                        if ((condition[0] && condition[1] && !condition[2])
+                                || !condition[0]) {
                             // Add symbol to the symbol table
                             symbolTable.addSymbol(type, val);
                         }
@@ -213,8 +222,10 @@ public class SyntaxAnalyzer {
             type = tokens.get(currentTokenIndex - 1).getValue();
             
             // Check if inside a control structure with condition = true
+            // and if a previous if/else-if has not been executed yet
             // or if not inside a control structure
-            if ((condition[0] && condition[1]) || !condition[0]) {
+            if ((condition[0] && condition[1] && !condition[2])
+                    || !condition[0]) {
                 // Add symbol to the symbol table
                 if (!symbolTable.containsSymbol(value)) {
                     symbolTable.addSymbol(type, value);
@@ -246,8 +257,10 @@ public class SyntaxAnalyzer {
                     type = "digits array (" + value + ") value";
                     
                     // Check if inside a control structure with condition = true
+                    // and if a previous if/else-if has not been executed yet
                     // or if not inside a control structure
-                    if ((condition[0] && condition[1]) || !condition[0]) {
+                    if ((condition[0] && condition[1] && !condition[2])
+                            || !condition[0]) {
                         // Add symbol to the symbol table
                         symbolTable.addSymbol(type, val);
                     }
@@ -269,8 +282,10 @@ public class SyntaxAnalyzer {
                         type = "digits (" + value + ") value";
                         
                         // Check if inside a control structure with condition = true
+                        // and if a previous if/else-if has not been executed yet
                         // or if not inside a control structure
-                        if ((condition[0] && condition[1]) || !condition[0]) {
+                        if ((condition[0] && condition[1] && !condition[2])
+                                || !condition[0]) {
                             // Add symbol to the symbol table
                             symbolTable.addSymbol(type, val);
                         }
@@ -295,8 +310,10 @@ public class SyntaxAnalyzer {
             type = tokens.get(currentTokenIndex - 1).getValue();
             
             // Check if inside a control structure with condition = true
+            // and if a previous if/else-if has not been executed yet
             // or if not inside a control structure
-            if ((condition[0] && condition[1]) || !condition[0]) {
+            if ((condition[0] && condition[1] && !condition[2])
+                    || !condition[0]) {
                 // Add symbol to the symbol table
                 if (!symbolTable.containsSymbol(value)) {
                     symbolTable.addSymbol(type, value);
@@ -336,8 +353,10 @@ public class SyntaxAnalyzer {
                     type = "lutang array (" + value + ") value";
                     
                     // Check if inside a control structure with condition = true
+                    // and if a previous if/else-if has not been executed yet
                     // or if not inside a control structure
-                    if ((condition[0] && condition[1]) || !condition[0]) {
+                    if ((condition[0] && condition[1] && !condition[2])
+                            || !condition[0]) {
                         // Add symbol to the symbol table
                         symbolTable.addSymbol(type, val);
                     }                    
@@ -376,8 +395,10 @@ public class SyntaxAnalyzer {
                             type = "lutang (" + value + ") value";
                             
                             // Check if inside a control structure with condition = true
+                            // and if a previous if/else-if has not been executed yet
                             // or if not inside a control structure
-                            if ((condition[0] && condition[1]) || !condition[0]) {
+                            if ((condition[0] && condition[1] && !condition[2])
+                                    || !condition[0]) {
                                 // Add symbol to the symbol table
                                 symbolTable.addSymbol(type, val);
                             }
@@ -456,7 +477,7 @@ public class SyntaxAnalyzer {
                         
                     } else if (arithOp.equals("ghosted")) {
                         valuesList.add(numbers);
-                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) - (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
@@ -464,7 +485,7 @@ public class SyntaxAnalyzer {
                         
                     } else if (arithOp.equals("cheater")) {
                         valuesList.add(numbers);
-                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) * (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
@@ -472,7 +493,7 @@ public class SyntaxAnalyzer {
 
                     } else if (arithOp.equals("chariz")) {
                         valuesList.add(numbers);
-                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) / (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
@@ -480,7 +501,7 @@ public class SyntaxAnalyzer {
 
                     } else if (arithOp.equals("dasurv")) {
                         valuesList.add(numbers);
-                        store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        store = Integer.toString((Integer) valuesList.get(0) % (Integer) valuesList.get(1));
                         valuesList.clear();
                         valuesList.add(Integer.parseInt(store));
 
@@ -488,8 +509,10 @@ public class SyntaxAnalyzer {
                     }
                     
                     // Check if inside a control structure with condition = true
+                    // and if a previous if/else-if has not been executed yet
                     // or if not inside a control structure
-                    if ((condition[0] && condition[1]) || !condition[0]) {
+                    if ((condition[0] && condition[1] && !condition[2])
+                            || !condition[0]) {
                         if (symbolTable.containsSymbol(type)) {
                             symbolTable.removeSymbol(type);
                             symbolTable.addSymbol(type, store);
@@ -514,16 +537,10 @@ public class SyntaxAnalyzer {
                         // Convert to float
                         numbersFloat = Float.parseFloat(numbers);
                         
-                        // For debugging
-//                        System.out.println("tokens.get(currentTokenIndex-3).getValue(): " + tokens.get(currentTokenIndex-3).getValue());
-//                        System.out.println("tokens.get(currentTokenIndex-2).getValue(): " + tokens.get(currentTokenIndex-2).getValue());
-//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
                     } else {
                         // Convert to float
                         numbersFloat = Float.parseFloat(numbers);
                         
-                        // For debugging
-//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
                     }
                     
                     // compute
@@ -571,8 +588,10 @@ public class SyntaxAnalyzer {
                         String type = "lutang (" + value + ") operations result";
                         
                         // Check if inside a control structure with condition = true
+                        // and if a previous if/else-if has not been executed yet
                         // or if not inside a control structure
-                        if ((condition[0] && condition[1]) || !condition[0]) {
+                        if ((condition[0] && condition[1] && !condition[2])
+                                || !condition[0]) {
                             if (symbolTable.containsSymbol(type)) {
                                 symbolTable.removeSymbol(type);
                                 symbolTable.addSymbol(type, store);
@@ -700,8 +719,10 @@ public class SyntaxAnalyzer {
                         String type = "lutang (" + value + ") operations result";
                         
                         // Check if inside a control structure with condition = true
+                        // and if a previous if/else-if has not been executed yet
                         // or if not inside a control structure
-                        if ((condition[0] && condition[1]) || !condition[0]) {
+                        if ((condition[0] && condition[1] && !condition[2])
+                                || !condition[0]) {
                             if (symbolTable.containsSymbol(type)) {
                                 symbolTable.removeSymbol(type);
                                 symbolTable.addSymbol(type, store);
@@ -849,6 +870,11 @@ public class SyntaxAnalyzer {
                             break;
                         }
                     }
+                    
+                    // Throw error if id is not in the symbolTable (if idValue is null)
+                    if (value.equals("")) {
+                        throw new Exception("'" + id + "' variable not declared.");
+                    }
                         
                     // compute
                     if (relOp.equals("samedt")
@@ -921,6 +947,11 @@ public class SyntaxAnalyzer {
                 }
             }
             
+            // Throw error if id is not in the symbolTable (if idValue is null)
+            if (prevNumbers.equals("")) {
+                throw new Exception("'" + leftId + "' variable not declared.");
+            }
+            
             if (getCurrentTokenType() == TokenType.REL_OPERATOR) {
                 String relOp = tokens.get(currentTokenIndex).getValue();
                 match(TokenType.REL_OPERATOR);
@@ -940,6 +971,11 @@ public class SyntaxAnalyzer {
                                 value = entry.getValue();
                                 break;
                             }
+                        }
+                        
+                        // Throw error if id is not in the symbolTable (if idValue is null)
+                        if (value.equals("")) {
+                            throw new Exception("'" + rightId + "' variable not declared.");
                         }
                         
                         // compute
@@ -1094,10 +1130,14 @@ public class SyntaxAnalyzer {
             
             match(TokenType.OPENBRACE);
             
-            // Check if the condition of the if-statement is true
             condition[0] = true;
             while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
                 parseStatement();
+            }
+            
+            // Set condition[2] to true if the if statement has been executed
+            if (condition[0] && condition[1]) {
+                condition[2] = true;
             }
             
             condition[0] = false;
@@ -1105,33 +1145,72 @@ public class SyntaxAnalyzer {
             
             match(TokenType.CLOSEBRACE);
             
-            // check for else-if statement/s
-            if (currentTokenIndex < tokens.size()) {
-                while (getCurrentTokenInput().equals("nvm tbh")) {
-                    match(TokenType.KEYWORD);
-                    
-                    match(TokenType.OPENPARENTHESIS);
-                    checkRelorLog();
-                    match(TokenType.CLOSEPARENTHESIS);
-                    
-                    match(TokenType.OPENBRACE);
-                    while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
-                        parseStatement();
+            // check for if-else statement/s
+            while (currentTokenIndex < tokens.size()
+                    && getCurrentTokenInput().equals("nvm tbh")) {
+                leftOperand = "";
+                rightOperand = "";
+
+                match(TokenType.KEYWORD);
+
+                match(TokenType.OPENPARENTHESIS);
+                // Check if the left operand is a variable
+                if (getCurrentToken().getType().equals(TokenType.IDENTIFIER)) {
+                    leftOperand = getCurrentToken().getValue();
+                }
+                checkRelorLog();
+                // Check if the right operand is a variable
+                if (tokens.get(currentTokenIndex-1).getType().equals(TokenType.IDENTIFIER)) {
+                    rightOperand = tokens.get(currentTokenIndex-1).getValue();
+                }
+                match(TokenType.CLOSEPARENTHESIS);
+
+                // Check if any variable inside the condition has NOT been declared
+                if (!leftOperand.equals("") || !rightOperand.equals("")) {
+                    if (!leftOperand.equals("") && !symbolTable.containsSymbol(leftOperand)) {
+                        throw new Exception("variable " + leftOperand + " has not been declared before the control structure");
+                    } else if (!rightOperand.equals("") && !symbolTable.containsSymbol(rightOperand)) {
+                        throw new Exception("variable " + rightOperand + " has not been declared before the control structure");
                     }
-                    match(TokenType.CLOSEBRACE);
                 }
 
-                // check for "else" statement
-                if (getCurrentTokenInput().equals("nvm")) { // else statement
-                    match(TokenType.KEYWORD);
-                    
-                    match(TokenType.OPENBRACE);
-                    while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
-                        parseStatement();   // statement/s
-                    }
-                    match(TokenType.CLOSEBRACE);
+                match(TokenType.OPENBRACE);
+
+                condition[0] = true;
+                while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
+                    parseStatement();
                 }
+
+                // Set condition[2] to true if the else-if statement has been executed
+                if (condition[0] && condition[1]) {
+                    condition[2] = true;
+                }
+
+                condition[0] = false;
+                condition[1] = false;
+
+                match(TokenType.CLOSEBRACE);
             }
+
+            // check for else statement
+            if (currentTokenIndex < tokens.size()
+                    && getCurrentTokenInput().equals("nvm")) { // else statement
+                match(TokenType.KEYWORD);
+
+                match(TokenType.OPENBRACE);
+
+                condition[0] = true;
+                condition[1] = true;    // also set the condition to true
+                while (!getCurrentTokenType().equals(TokenType.CLOSEBRACE)) {
+                    parseStatement();
+                }
+
+                match(TokenType.CLOSEBRACE);
+            }
+
+            condition[0] = false;
+            condition[1] = false;
+            condition[2] = false;
         } else if (getCurrentTokenInput().equals("nvm tbh") || getCurrentTokenInput().equals("nvm")) {
             throw new Exception("Keyword " + getCurrentTokenType() + " found without a previous 'tbh' statement");
         } else if (getCurrentTokenInput().equals("g")) {   // do-while loop
