@@ -10,11 +10,11 @@ public class OutputTable {
     
     public OutputTable(List<Token> list) {
         f = new JFrame();
-        String col[] = {"Type", "Value"};
+        String col[] = {"#", "Type", "Value"};
         DefaultTableModel tableModel = new DefaultTableModel(col, 0);
         
         for (int i=0; i<list.size(); i++) {
-            Object[] row = {list.get(i).getType(), list.get(i).getValue()};
+            Object[] row = {i+1, list.get(i).getType(), list.get(i).getValue()};
             tableModel.addRow(row);
         }
         
@@ -25,6 +25,11 @@ public class OutputTable {
         f.add(sp);
         f.setSize(450,600);    
         f.setVisible(true);
+        
+        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+        center.setHorizontalAlignment(JLabel.CENTER);
+        jt.getColumnModel().getColumn(0).setPreferredWidth(5);
+        jt.getColumnModel().getColumn(0).setCellRenderer(center);
         
         f.addWindowListener(new CloseButtonHandler());
     }
