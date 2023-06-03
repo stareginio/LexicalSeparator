@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JOptionPane;
 
 public class SyntaxAnalyzer {
 
@@ -100,7 +101,8 @@ public class SyntaxAnalyzer {
             } else {
                 throw new Exception("'" + value + "' value already declared.");
             }
-
+            
+            // Check if array
             if (getCurrentTokenType() == TokenType.OPENBRACKET) {
                 match(TokenType.OPENBRACKET);
                 match(TokenType.CLOSEBRACKET);
@@ -198,7 +200,7 @@ public class SyntaxAnalyzer {
             } else {
                 throw new Exception("'" + value + "' value already declared.");
             }
-            
+
             if (getCurrentTokenType() == TokenType.OPENBRACKET) {
                 match(TokenType.OPENBRACKET);
                 match(TokenType.CLOSEBRACKET);
@@ -248,11 +250,12 @@ public class SyntaxAnalyzer {
                     parseList.add("[<digits-declaration> [digits][<variableName>[" + varName + "]][;]]");
                 }
             }
+            
         } else if (getCurrentTokenInput().equals("lutang")) {
             match(TokenType.DATATYPE);
             String type = "";
             String value = "";
-
+            
             if (getCurrentTokenType() == TokenType.OPENBRACKET && tokens.get(currentTokenIndex + 1).getType() == TokenType.CLOSEBRACKET) {
                 value = tokens.get(currentTokenIndex + 2).getValue();
             } else {
@@ -309,23 +312,35 @@ public class SyntaxAnalyzer {
                     match(TokenType.ASSIGNMENT_OPERATOR);
                     tempListLutang.add(getCurrentTokenInput());
                     match(TokenType.NUMBERS);
-                    if (getTokenInputLutang() == TokenType.ARITH_OPERATOR) {
+                    
+                    // For debugging
+//                    System.out.println("tokens.get(currentTokenIndex): " + tokens.get(currentTokenIndex));
+//                    System.out.println("getTokenInputLutang(): " + getTokenInputLutang());
+                    
+                    if (getTokenInputLutang() == TokenType.ARITH_OPERATOR
+                            || tokens.get(currentTokenIndex).getType() == TokenType.ARITH_OPERATOR) {                       
                         parseList.add("[<lutang_operation> [lutang][<variableName>[" + varName + "]][=]");
                         parseArithOp(value);
                         parseList.add("[;]");
-                    } else if (getCurrentTokenType() == TokenType.POINT) {
-                        String numbers = tokens.get(currentTokenIndex - 1).getValue();
-                        match(TokenType.POINT);
-                        match(TokenType.NUMBERS);
-                        numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+                    } if (getCurrentTokenType() == TokenType.POINT) {                       
+                        // Check for arith operation
+                        if (currentTokenIndex+2 < tokens.size()
+                                && tokens.get(currentTokenIndex+2).getType() == TokenType.ARITH_OPERATOR) {
+                            parseArithOp(value);
+                        } else {
+                            String numbers = tokens.get(currentTokenIndex - 1).getValue();
+                            match(TokenType.POINT);
+                            match(TokenType.NUMBERS);
+                            numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+                            
+                            String val = numbers;
+                            type = "lutang (" + value + ") value";
 
-                        String val = numbers;
-                        type = "lutang (" + value + ") value";
-
-                        // Add symbol to the symbol table
-                        symbolTable.addSymbol(type, val);
-                        parseList.add("[<lutang_initialization> [lutang][<variableName>[" + varName + "]][=][<numbers>["
-                                + numbers + "]][;]]");
+                            // Add symbol to the symbol table
+                            symbolTable.addSymbol(type, val);
+                            parseList.add("[<lutang_initialization> [lutang][<variableName>[" + varName + "]][=][<numbers>["
+                                    + numbers + "]][;]]");
+                        }   
                     }
                 } else {
                     parseList.add("[<lutang_declaration> [lutang][<variableName>[" + varName + "]][;]]");
@@ -335,97 +350,191 @@ public class SyntaxAnalyzer {
     }
 
     private void parseArithOp(String value) throws Exception {
-        int prevNumbers = Integer.parseInt(tokens.get(currentTokenIndex - 1).getValue());
-        ArrayList<Integer> valuesList = new ArrayList();
+        String prevNumbers = tokens.get(currentTokenIndex - 1).getValue();
+        ArrayList<Object> valuesList = new ArrayList();
         String result = "";
-        valuesList.add(prevNumbers);
-
+        
+        Map.Entry<String,String> firstItem = symbolTable.getSymbols().entrySet().iterator().next();
+        String datatype = firstItem.getKey();
+        
+        // Check if not followed by a decimal point (int instead of float)
         if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
+            
+            // add the integer in valuesList
+            valuesList.add(Integer.parseInt(prevNumbers));
+            
             do {
-                match(TokenType.ARITH_OPERATOR);
-                String arithOp = tokens.get(currentTokenIndex - 1).getValue();
-                match(TokenType.NUMBERS);
-                int numbers = Integer.parseInt(tokens.get(currentTokenIndex - 1).getValue());
-                
-                // compute
-                if (arithOp.equals("lahamz")) {
+                if (datatype.equals("digits")) {
+                    match(TokenType.ARITH_OPERATOR);
+                    String arithOp = tokens.get(currentTokenIndex - 1).getValue();
+                    match(TokenType.NUMBERS);
+                    int numbers = Integer.parseInt(tokens.get(currentTokenIndex - 1).getValue());
+                    
+                    // For debugging
+//                    System.out.println("\nSymbol Table:");
+//                    System.out.println("-------------");
+//                    for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+//                        String symbolName = entry.getKey();
+//                        String symbolInfo = entry.getValue();
+//
+//                        System.out.println("Value: " + symbolInfo);
+//                        System.out.println("Type: " + symbolName);
+//                        System.out.println("--------------------");
+//                    }
+                    
+                    // compute
+                    if (arithOp.equals("lahamz")) {
+                        valuesList.add(numbers);
+                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        valuesList.clear();
+                        valuesList.add(Integer.parseInt(store));
 
-                    valuesList.add(numbers);
-                    String store = Integer.toString(valuesList.get(0) + valuesList.get(1));
-                    valuesList.clear();
-                    valuesList.add(Integer.parseInt(store));
+                        String type = "digits (" + value + ") operations result";
 
-                    String type = "digits (" + value + ") operations result";
+                        if (symbolTable.containsSymbol(type)) {
+                            symbolTable.removeSymbol(type);
+                            symbolTable.addSymbol(type, store);
+                        } else {
+                            symbolTable.addSymbol(type, store);
+                        }
+                    } else if (arithOp.equals("ghosted")) {
+                        valuesList.add(numbers);
+                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        valuesList.clear();
+                        valuesList.add(Integer.parseInt(store));
 
-                    if (symbolTable.containsSymbol(type)) {
-                        symbolTable.removeSymbol(type);
-                        symbolTable.addSymbol(type, store);
-                    } else {
-                        symbolTable.addSymbol(type, store);
-                    }
+                        String type = "digits (" + value + ") operations result";
 
-                } else if (arithOp.equals("ghosted")) {
+                        if (symbolTable.containsSymbol(type)) {
+                            symbolTable.removeSymbol(type);
+                            symbolTable.addSymbol(type, store);
+                        } else {
+                            symbolTable.addSymbol(type, store);
+                        }
+                    } else if (arithOp.equals("cheater")) {
+                        valuesList.add(numbers);
+                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        valuesList.clear();
+                        valuesList.add(Integer.parseInt(store));
 
-                    valuesList.add(numbers);
-                    String store = Integer.toString(valuesList.get(0) - valuesList.get(1));
-                    valuesList.clear();
-                    valuesList.add(Integer.parseInt(store));
+                        String type = "digits (" + value + ") operations result";
 
-                    String type = "digits (" + value + ") operations result";
+                        if (symbolTable.containsSymbol(type)) {
+                            symbolTable.removeSymbol(type);
+                            symbolTable.addSymbol(type, store);
+                        } else {
+                            symbolTable.addSymbol(type, store);
+                        }
+                    } else if (arithOp.equals("chariz")) {
+                        valuesList.add(numbers);
+                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        valuesList.clear();
+                        valuesList.add(Integer.parseInt(store));
 
-                    if (symbolTable.containsSymbol(type)) {
-                        symbolTable.removeSymbol(type);
-                        symbolTable.addSymbol(type, store);
-                    } else {
-                        symbolTable.addSymbol(type, store);
-                    }
+                        String type = "digits (" + value + ") operations result";
 
-                } else if (arithOp.equals("cheater")) {
+                        if (symbolTable.containsSymbol(type)) {
+                            symbolTable.removeSymbol(type);
+                            symbolTable.addSymbol(type, store);
+                        } else {
+                            symbolTable.addSymbol(type, store);
+                        } 
+                    } else if (arithOp.equals("dasurv")) {
+                        valuesList.add(numbers);
+                        String store = Integer.toString((Integer) valuesList.get(0) + (Integer) valuesList.get(1));
+                        valuesList.clear();
+                        valuesList.add(Integer.parseInt(store));
 
-                    valuesList.add(numbers);
-                    String store = Integer.toString(valuesList.get(0) * valuesList.get(1));
-                    valuesList.clear();
-                    valuesList.add(Integer.parseInt(store));
+                        String type = "digits (" + value + ") operations result";
 
-                    String type = "digits (" + value + ") operations result";
-
-                    if (symbolTable.containsSymbol(type)) {
-                        symbolTable.removeSymbol(type);
-                        symbolTable.addSymbol(type, store);
-                    } else {
-                        symbolTable.addSymbol(type, store);
-                    }
-
-                } else if (arithOp.equals("chariz")) {
-
-                    valuesList.add(numbers);
-                    String store = Integer.toString(valuesList.get(0) / valuesList.get(1));
-                    valuesList.clear();
-                    valuesList.add(Integer.parseInt(store));
-
-                    String type = "digits (" + value + ") operations result";
-
-                    if (symbolTable.containsSymbol(type)) {
-                        symbolTable.removeSymbol(type);
-                        symbolTable.addSymbol(type, store);
-                    } else {
-                        symbolTable.addSymbol(type, store);
+                        if (symbolTable.containsSymbol(type)) {
+                            symbolTable.removeSymbol(type);
+                            symbolTable.addSymbol(type, store);
+                        } else {
+                            symbolTable.addSymbol(type, store);
+                        }
                     }
                     
-                } else if (arithOp.equals("dasurv")) {
-
-                    valuesList.add(numbers);
-                    String store = Integer.toString(valuesList.get(0) % valuesList.get(1));
-                    valuesList.clear();
-                    valuesList.add(Integer.parseInt(store));
-
-                    String type = "digits (" + value + ") operations result";
-
-                    if (symbolTable.containsSymbol(type)) {
-                        symbolTable.removeSymbol(type);
-                        symbolTable.addSymbol(type, store);
+                } else if (datatype.equals("lutang")) {
+                    match(TokenType.ARITH_OPERATOR);
+                    String arithOp = tokens.get(currentTokenIndex - 1).getValue();
+                    match(TokenType.NUMBERS);
+                    String numbers = tokens.get(currentTokenIndex - 1).getValue();
+                    float numbersFloat = 0;
+                    
+                    // Check if followed by a decimal point (float instead of int)
+                    if ((tokens.get(currentTokenIndex).getType()).equals(TokenType.POINT)) {
+                        match(TokenType.POINT);
+                        match(TokenType.NUMBERS);
+                        numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+                        
+                        // Convert to float
+                        numbersFloat = Float.parseFloat(numbers);
+                        
+                        // For debugging
+//                        System.out.println("tokens.get(currentTokenIndex-3).getValue(): " + tokens.get(currentTokenIndex-3).getValue());
+//                        System.out.println("tokens.get(currentTokenIndex-2).getValue(): " + tokens.get(currentTokenIndex-2).getValue());
+//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
                     } else {
-                        symbolTable.addSymbol(type, store);
+                        // Convert to float
+                        numbersFloat = Float.parseFloat(numbers);
+                        
+                        // For debugging
+//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
+                    }
+                    
+                    // compute
+                    if (arithOp.equals("lahamz") || arithOp.equals("ghosted")
+                            || arithOp.equals("cheater") || arithOp.equals("chariz")) {
+                        valuesList.add(numbersFloat);
+                        String store = "";
+                        
+                        if (arithOp.equals("lahamz")) {
+                            // Check if left operand is int or not
+                            if (((Object) valuesList.get(0)).getClass().getSimpleName().equals("Integer")) {
+                                store = Float.toString((Integer) valuesList.get(0) + (Float) valuesList.get(1));
+                            } else {
+                                store = Float.toString((Float) valuesList.get(0) + (Float) valuesList.get(1));
+                            }
+                            
+                        } else if (arithOp.equals("ghosted")) {
+                            // Check if left operand is int or not
+                            if (((Object) valuesList.get(0)).getClass().getSimpleName().equals("Integer")) {
+                                store = Float.toString((Integer) valuesList.get(0) - (Float) valuesList.get(1));
+                            } else {
+                                store = Float.toString((Float) valuesList.get(0) - (Float) valuesList.get(1));
+                            }
+                            
+                        } else if (arithOp.equals("cheater")) {
+                            // Check if left operand is int or not
+                            if (((Object) valuesList.get(0)).getClass().getSimpleName().equals("Integer")) {
+                                store = Float.toString((Integer) valuesList.get(0) * (Float) valuesList.get(1));
+                            } else {
+                                store = Float.toString((Float) valuesList.get(0) * (Float) valuesList.get(1));
+                            }
+                            
+                        } else if (arithOp.equals("chariz")) {
+                            // Check if left operand is int or not
+                            if (((Object) valuesList.get(0)).getClass().getSimpleName().equals("Integer")) {
+                                store = Float.toString((Integer) valuesList.get(0) / (Float) valuesList.get(1));
+                            } else {
+                                store = Float.toString((Float) valuesList.get(0) / (Float) valuesList.get(1));
+                            }
+                        }
+                        
+                        valuesList.clear();
+                        valuesList.add(Float.parseFloat(store));
+
+                        String type = "digits (" + value + ") operations result";
+
+                        if (symbolTable.containsSymbol(type)) {
+                            symbolTable.removeSymbol(type);
+                            symbolTable.addSymbol(type, store);
+                        } else {
+                            symbolTable.addSymbol(type, store);
+                        }
+                    } else if (arithOp.equals("dasurv")) {
+                        throw new Exception("Float value found in modulo operation");
                     }
                 }
                 
@@ -462,20 +571,86 @@ public class SyntaxAnalyzer {
         } else if (getCurrentTokenType() == TokenType.POINT) {
             match(TokenType.POINT);
             match(TokenType.NUMBERS);
-//            prevNumbers = prevNumbers + "." + tokens.get(currentTokenIndex - 1).getValue();
-
+            prevNumbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+            
+            // Add the float in valuesList
+            valuesList.add(Float.parseFloat(prevNumbers));
+            
             if (getCurrentTokenType() == TokenType.ARITH_OPERATOR) {
-                do {
+                do {                    
+                    // For debugging
+//                    System.out.println("\nSymbol Table:");
+//                    System.out.println("-------------");
+//                    for (Map.Entry<String, String> entry : symbolTable.getSymbols().entrySet()) {
+//                        String symbolName = entry.getKey();
+//                        String symbolInfo = entry.getValue();
+//
+//                        System.out.println("Value: " + symbolInfo);
+//                        System.out.println("Type: " + symbolName);
+//                        System.out.println("--------------------");
+//                    }
+                    
                     match(TokenType.ARITH_OPERATOR);
                     String arithOp = tokens.get(currentTokenIndex - 1).getValue();
                     match(TokenType.NUMBERS);
                     String numbers = tokens.get(currentTokenIndex - 1).getValue();
-                    match(TokenType.POINT);
-                    match(TokenType.NUMBERS);
-                    numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+                    float numbersFloat;
+                                        
+                    // Check if followed by a decimal point (float instead of int)
+                    if (currentTokenIndex+1 < tokens.size()
+                            && (tokens.get(currentTokenIndex+1).getType()).equals(TokenType.POINT)) {
+                        match(TokenType.POINT);
+                        match(TokenType.NUMBERS);
+                        numbers += "." + tokens.get(currentTokenIndex - 1).getValue();
+                        
+                        // Convert to float
+                        numbersFloat = Float.parseFloat(numbers);
+                        
+                        // For debugging
+//                        System.out.println("tokens.get(currentTokenIndex-3).getValue(): " + tokens.get(currentTokenIndex-3).getValue());
+//                        System.out.println("tokens.get(currentTokenIndex-2).getValue(): " + tokens.get(currentTokenIndex-2).getValue());
+//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
+                    } else {
+                        // Convert to float
+                        numbersFloat = Float.parseFloat(numbers);
+                        
+                        // For debugging
+//                        System.out.println("tokens.get(currentTokenIndex-1).getValue(): " + tokens.get(currentTokenIndex-1).getValue());
+                    }
+                    
+                    // Compute
+                    if (arithOp.equals("lahamz") || arithOp.equals("ghosted")
+                            || arithOp.equals("cheater") || arithOp.equals("chariz")) {
+                        valuesList.add(numbersFloat);
+                        String store = "";
+                        
+                        if (arithOp.equals("lahamz")) {
+                            store = Float.toString((Float) valuesList.get(0) + (Float) valuesList.get(1));
+                        } else if (arithOp.equals("ghosted")) {
+                            store = Float.toString((Float) valuesList.get(0) - (Float) valuesList.get(1));
+                            System.out.println("store: " + store);
+                        } else if (arithOp.equals("cheater")) {
+                            store = Float.toString((Float) valuesList.get(0) * (Float) valuesList.get(1));
+                        } else if (arithOp.equals("chariz")) {
+                            store = Float.toString((Float) valuesList.get(0) / (Float) valuesList.get(1));
+                        }
+                        
+                        valuesList.clear();
+                        valuesList.add(Float.parseFloat(store));
 
-                    // store values
-                    //                   valuesList.add(arithOp + "," + numbers);
+                        String type = "lutang (" + value + ") operations result";
+
+                        if (symbolTable.containsSymbol(type)) {
+                            symbolTable.removeSymbol(type);
+                            symbolTable.addSymbol(type, store);
+                        } else {
+                            symbolTable.addSymbol(type, store);
+                        }
+                        
+                    } else if (arithOp.equals("dasurv")) {
+                        throw new Exception("Float value found in modulo operation");
+                    }
+                    
                 } while (getCurrentTokenType() == TokenType.ARITH_OPERATOR);
 
                 for (int i = valuesList.size() - 1; i >= 0; i--) {
