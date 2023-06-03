@@ -82,7 +82,7 @@ public class LexicalSeparator {
 
                     System.out.println("Valid statement");
                 } catch (Exception e) {
-                    System.out.println("Syntax error: " + e.getMessage());
+                    System.out.println("Compilation error: " + e.getMessage());
 //                    System.out.println("Occurred at: " + e.getStackTrace()[0]);
                     e.printStackTrace();
                     System.out.println("Invalid statement");
